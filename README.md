@@ -12,3 +12,8 @@
 | Akkusativ | Den  | Die | Das | 
 |   Dativ   | Dem  | Der | Dem |
 | Genitiv   | Des | Der | Des | 
+
+## Tasks
+
+- [ ] remove `.idea` folder from repository
+- [ ] setup a `.gitignore` file
