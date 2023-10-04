@@ -7,10 +7,10 @@ def function2 (num):
 def function3 (num):
     return 0
 
-def function4 num:
+def function4 (num):
     return 0
 
-def function5 num:
+def function5 (num):
     return 0
 
 #abcdefgh
