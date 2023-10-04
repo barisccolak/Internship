@@ -6,4 +6,4 @@ class Person:
     def printname(self):
         print(self.name)
 
-p1 = Person("Baris", 26)
+# p1 = Person("Baris", 26)
