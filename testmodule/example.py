@@ -9,7 +9,7 @@ def function_one (number):
     -------
     int
     """
-    return number + 1
+    return number + 10
 
 def function_two (number):
     return number + 2
