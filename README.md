@@ -5,15 +5,33 @@
 1. [Basic Syntax](https://www.markdownguide.org/basic-syntax/)
 2. [Advanced Syntax](https://daringfireball.net/projects/markdown/syntax)
 
-## **Useful**
 
-| Nominativ | Der  | Die | Das |
-|:---------:|:----:| :--: |:---:|
-| Akkusativ | Den  | Die | Das | 
-|   Dativ   | Dem  | Der | Dem |
-| Genitiv   | Des | Der | Des | 
+## Git Commands
 
-## Tasks
+1. `git add . -n` : Shows the dry changes 
+2. `git add .` : Adds the changes
+3. `git commit -m "message"` : Commits
+4. `git <x> --help` : Documentation for x
+5. `git --help` : Documentation for Git
+6. `git push` : Pushes the commit
+7. `git checkout branch_name` : Changes the branch
+8. `git push --set-upstream origin sidebranch` : Pushes and sets upstream for current branch
+9. `git status` : Shows the status
+10. `git checkout -b ＜new-branch＞` : Creates and changes to new branch
 
-- [ ] remove `.idea` folder from repository
-- [ ] setup a `.gitignore` file
+
+## Conda Commands
+
+1. `conda create -n test-env <python=3.10 numpy pandas> -y` : Creates a test environment and installs the listed packages
+2. `conda activate test-env`: Activates test environment
+
+
+## Pip Commands
+
+1.`pip install -e .` : Installs package
+
+
+## Comman Shell 
+
+1. `python`
+2. `ipython`
