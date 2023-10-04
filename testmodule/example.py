@@ -1,4 +1,4 @@
-    def function_one (number):
+def function_one (number):
     """
     Parameters
     ----------
