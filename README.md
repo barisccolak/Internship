@@ -40,4 +40,4 @@
 
 1. `python`
 2. `ipython`
-2. `python -m ipykernel install --user --name test-env --display-name "test-env"`: register a conda environment as a jupyter kernel (you need this to make the environment selectable in Jupyter notebook) 
+2. `python -m ipykernel install --user --name test-env --display-name "test-env"`: register a conda environment as a jupyter kernel (you need this to make the environment selectable in Jupyter notebook)
