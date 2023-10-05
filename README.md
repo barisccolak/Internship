@@ -41,3 +41,37 @@
 1. `python`
 2. `ipython`
 2. `python -m ipykernel install --user --name test-env --display-name "test-env"`: register a conda environment as a jupyter kernel (you need this to make the environment selectable in Jupyter notebook)
+
+
+***
+## quickstart 
+
+This version contains two functions: `write.py` and `read.py`. 
+
+## user guide
+***
+### Installation
+
+Install using `pip` locally:
+
+    `pip install -e .`
+
+
+    `pip install lorem`
+
+### Writing a text file
+
+To generate a text using `testmodule.write`:
+
+    `python -m testmodule.write`
+
+Give a path to create `text.txt`
+
+### Reading a text file
+
+To read a text file use class method `testmodule.read`:
+
+    `python -m testmodule.read`
+
+Supply the path of the target file.
+
