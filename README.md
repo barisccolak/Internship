@@ -46,17 +46,15 @@
 ***
 ## quickstart 
 
-This version contains two functions: `write.py` and `read.py`. 
+This version contains two functions: `write` and `read`. 
 
 ## user guide
-***
+
 ### Installation
 
 Install using `pip` locally:
 
     `pip install -e .`
-
-
     `pip install lorem`
 
 ### Writing a text file
