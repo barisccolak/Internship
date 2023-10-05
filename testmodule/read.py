@@ -1,19 +1,21 @@
 class TextFileReader:
     """Class to open a file and print"""
+
     def __init__(self, file_path):
         self.file_path = file_path
 
     def read_file(self):
         """Class method to read the file and print the content."""
         try:
-            with open(self.file_path, 'r') as file:
+            with open(self.file_path, "r") as file:
                 content = file.read()
                 print(content)
-                
+
         except FileNotFoundError:
             print(f"File not found: {self.file_path}")
         except Exception as e:
             print(f"An error occurred: {str(e)}")
+
 
 if __name__ == "__main__":
     file_path = input("Enter the path to the .txt file: ")
