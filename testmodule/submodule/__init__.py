@@ -1,1 +1,1 @@
-from .submodule1 import Person
+"""Another init file."""

@@ -1,4 +1,2 @@
-from .example import function_one, function_two
-from .print import echo
-
+"""Init file is an example."""
 # from .read import read_file
