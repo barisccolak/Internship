@@ -1,5 +1,5 @@
 """fileparser.py contains a class to test if given .JBI file is operable."""
-class jobFile:
+class JobFile:
     """Public class to define jobFile."""
     
     def __init__(self, file_path):
@@ -25,8 +25,10 @@ class jobFile:
                 for i, line in enumerate(self.lines):
                     if line.startswith("NOP"):
                         self.separator = i  # stores the index of NOP
-                        self.programlines = self.lines[self.separator:] # add the lines after NOP into headlines
-                        self.headlines = self.lines[:self.separator]   # add the lines before NOP into headlines    
+                        self.programlines = self.lines[self.separator:]
+                        # add the lines after NOP into headlines
+                        self.headlines = self.lines[:self.separator]
+                        # add the lines before NOP into headlines    
 
         except FileNotFoundError:
             raise (f"File not found: {self.file_path}")
@@ -42,7 +44,8 @@ class jobFile:
         print("name :", self.name)
 
     def save_foldername(self):
-        """Filter the characters in the foldername line until ' ,' and save as foldername."""
+        """Filter the characters in the foldername line
+        until ' ,' and save as foldername."""
         until = " "
         self.foldername = self.headlines[2]
         self.foldername = self.foldername[self.foldername.index(until) :]
@@ -54,8 +57,10 @@ class jobFile:
         self.rule_post_NOP()
         self.rule_setreg_mreg()
 
+
     def rule_post_NOP(self):
-        """Check if program starts with a comment line directly after the NOP statement."""
+        """Check if program starts with a comment line 
+        directly after the NOP statement."""
         if not self.programlines[1].startswith("'---------------"):
             print(
                 "Every program should start with a comment line directly after the NOP statement."
@@ -64,24 +69,20 @@ class jobFile:
 
     def rule_setreg_mreg(self):
         """Test and allow the job if program command SETREG MREG# is listed unter FOLDERNAME TWINCAT_KOMMUNIKATION."""
-        try:
-            is_allowed_flag = False
+        is_allowed_flag = False
 
-            for i in self.programlines:
-                if (
-                    i.startswith("SETREG MREG#")
-                    and self.foldername == "TWINCAT_KOMMUNIKATION"
-                ):
-                    is_allowed_flag = True
-                    break
+        for i in self.programlines:
+            if (
+                i.startswith("SETREG MREG#")
+                and self.foldername == "TWINCAT_KOMMUNIKATION"
+            ):
+                is_allowed_flag = True
+                break
 
-            if is_allowed_flag is False:
-                print("The program command SETREG MREG# should only be allowed when the job is listed unter FOLDERNAME TWINCAT_KOMMUNIKATION")
-
-        except Exception as e:
-            raise (e)
+        if is_allowed_flag is False:
+            print("The program command SETREG MREG# should only be allowed when the job is listed unter FOLDERNAME TWINCAT_KOMMUNIKATION")
 
 
 if __name__ == "__main__":
     file_path = "/mnt/scratch/bcolak/test.JBI"
-    job = jobFile(file_path)
+    job = JobFile(file_path)
