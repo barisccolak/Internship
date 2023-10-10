@@ -1,13 +1,16 @@
+"""Read public module contains a class to read a text file."""
+
 class TextFileReader:
-    """Class to open a file and print"""
+    """Class to open a file and print."""
 
     def __init__(self, file_path):
+        """Init file."""
         self.file_path = file_path
 
     def read_file(self):
         """Class method to read the file and print the content."""
         try:
-            with open(self.file_path, "r") as file:
+            with open(self.file_path) as file:
                 content = file.read()
                 print(content)
 

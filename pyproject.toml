@@ -12,3 +12,14 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     ]
+
+[tool.ruff]
+select = [
+  "E",   # pycodestyle
+  "F",   # pyflakes
+  "UP",  # pyupgrade
+  "D",   # pydocstyle
+]
+
+[tool.ruff.pydocstyle]
+convention = "numpy"

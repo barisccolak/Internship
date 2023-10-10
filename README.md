@@ -15,9 +15,10 @@
 5. `git --help` : Documentation for Git
 6. `git push` : Pushes the commit
 7. `git checkout branch_name` : Changes the branch
-8. `git push --set-upstream origin sidebranch` : Pushes and sets upstream for current branch
-9. `git status` : Shows the status
-10. `git checkout -b ＜new-branch＞` : Creates and changes to new branch
+8. `git checkout -b branch_name` : Create and changes the branch
+9. `git push --set-upstream origin sidebranch` : Pushes and sets upstream for current branch
+10. `git status` : Shows the status
+11. `git checkout -b ＜new-branch＞` : Creates and changes to new branch
 
 
 ## Conda Commands
@@ -43,10 +44,18 @@
 2. `python -m ipykernel install --user --name test-env --display-name "test-env"`: register a conda environment as a jupyter kernel (you need this to make the environment selectable in Jupyter notebook)
 
 
+## Ruff Commands
+
+1. pip install ruff
+2. ruff check .
+3. ruff check --fix .
+4. git diff : Shows the differences.
+5. 
+
 ***
 ## quickstart 
 
-This version contains two functions: `write` and `read`. 
+This version of Fileparser contains two functions: `write` and `read`. 
 
 ## user guide
 
