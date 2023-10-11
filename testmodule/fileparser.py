@@ -186,7 +186,7 @@ def check_D(job_file, group, number):
             argument number in both cases."
         )
 
-#work in progress
+
 def check_E(job_file, group, number):
     """Check (JBI-W5).
     
@@ -206,27 +206,44 @@ def check_E(job_file, group, number):
     """
     firstline = None
     lastline = None
-    is_name_ok = True
+    #List of the comment lines indexes
+    comment_indexes = []
 
     if job_file.foldername == "MAIN":
-        firstline = job_file.programlines[1]
-        print(firstline)
-        lastline = job_file.programlines[-1]
-        print(lastline)
-        is_name_ok = True
+        #Create a list for the comment block indexes
+        for index, item in enumerate(job_file.programlines):
+            if item.strip().startswith("'---"):
+                comment_indexes.append(index)
+                
+        """firstline saver:
+        If the line after initial comment 
+        block contains a single line comment, skip this
+        line and save the firstline.""" 
+        if job_file.programlines[comment_indexes[1]+1].strip().startswith("'"):
+            firstline = job_file.programlines[comment_indexes[1]+2].strip()
+        else:
+            firstline = job_file.programlines[comment_indexes[1]+1].strip()
 
-    if not (
-        (is_name_ok is True)
-        and (firstline and lastline != None)
-        and (firstline == lastline == "CALL JOB:TRIGGER_RESET")
+        """lastline saver:
+        If the previous line from END command is an " ", 
+        skip this line and save one before as lastline."""
+        
+        if (job_file.programlines[-2]).isspace():
+            lastline = job_file.programlines[-3].strip()
+        else:
+            lastline = job_file.programlines[-2].strip()
+        
+    #Check after having firstline, lastline and is_name_ok.
+    if (
+         firstline == lastline == "CALL JOB:TRIGGER_RESET"
     ):
+        pass
+        
+    else:
         print(
-            f"{file_name} - {group}{number} +\
-            - [2]: For all jobs in folder MAIN:+\
-            The first program line (after initial +\
-            comments) as well as the final program +\
-            line should be CALL JOB:TRIGGER_RESET."
-        )
+            f"{file_name} - {group}{number} - [2]: For all jobs in folder MAIN: The first program line (after initial comments) as well as the final program line should be CALL JOB:TRIGGER_RESET.")
+
+        
 
 
 ##########################
@@ -289,7 +306,7 @@ class JobFile:
             # Rule("JBI-W", 2, logic=check_B), # finished
             # Rule("JBI-W", 3, logic=check_C), #finished
             # Rule("JBI-W", 4, logic=check_D), #finished
-            # Rule("JBI-W", 5, logic=check_E)
+            # Rule("JBI-W", 5, logic=check_E), #finished
         ]
 
         for rule in rules:
