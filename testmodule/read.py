@@ -1,5 +1,6 @@
 """Read public module contains a class to read a text file."""
 
+
 class TextFileReader:
     """Class to open a file and print."""
 
