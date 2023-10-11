@@ -43,10 +43,7 @@ def check_A(job_file, group, number):
     """
     if not job_file.programlines[1].startswith("'---------------"):
         print(
-            f"{file_name} - {group}{number} - +\
-            [{job_file.separator+2}]: Every program +\
-            should start with +\
-            a comment line directly after the NOP statement."
+            f"{file_name} - {group}{number} - [{job_file.separator+2}]: Every program should start with a comment line directly after the NOP statement."
         )
 
 
@@ -77,9 +74,7 @@ def check_B(job_file, group, number):
 
     if not is_allowed_flag:
         print(
-            f"{file_name} - {group}{number} [3] :The program command SETREG MREG# +\
-            should only be allowed when the job is +\
-            listed under FOLDERNAME TWINCAT_KOMMUNIKATION"
+            f"{file_name} - {group}{number} [3] :The program command SETREG MREG# should only be allowed when the job is listed under FOLDERNAME TWINCAT_KOMMUNIKATION"
         )
 
 
@@ -108,34 +103,24 @@ def check_C(job_file, group, number):
     index_trigger = 0
 
     if job_file.foldername == "STANDARD" or job_file.foldername == "MAIN":
-        print("yes")
         for i, line in enumerate(job_file.programlines):
             if line.startswith("SET USERNAME"):
                 set_flag_username = True
                 index_username = i
-                print("yesyes")
             elif line.startswith('CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"'):
                 set_flag_trigger = True
                 index_trigger = i
-                print("yesyesyesyes")
 
         if set_flag_username is False:
             print(
-                f"{file_name} - {group}{number} +\
-                [{len(job_file.headlines) + index_trigger+1}]: The command +\
-                SET USERFRAME must be executed before the +\
-                command CALL JOB:TRIGGER ARGF PROGRAMM_EIN is called"
+                f"{file_name} - {group}{number} [{len(job_file.headlines) + index_trigger+1}]: The command SET USERFRAME does not exist"
             )
 
         if not (
             set_flag_username and set_flag_trigger and index_username <= index_trigger
         ):
             print(
-                f"{file_name} - {group}{number} +\
-                [{len(job_file.headlines) + index_username+1}]: +\
-                The command SET USERFRAME must be +\
-                executed before the command +\
-                CALL JOB:TRIGGER ARGF PROGRAMM_EIN is called"
+                f"{file_name} - {group}{number} [{len(job_file.headlines) + index_username+1}]: The command SET USERFRAME must be executed before the command  CALL JOB:TRIGGER ARGF PROGRAMM_EIN is called"
             )
 
 
@@ -178,12 +163,7 @@ def check_D(job_file, group, number):
 
     if argument != tcp_call_arg:
         print(
-            f"{file_name} - {group}{number} -+\
-            [{index_tcpon + len(job_file.headlines)}]: +\
-            When a the TCPON command is called, +\
-            the previous line must be a call to +\
-            CALL JOB:SET_TCPON with the same +\
-            argument number in both cases."
+            f"{file_name} - {group}{number} - [{index_tcpon + len(job_file.headlines)}]: When a the TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases."
         )
 
 
@@ -243,7 +223,45 @@ def check_E(job_file, group, number):
         print(
             f"{file_name} - {group}{number} - [2]: For all jobs in folder MAIN: The first program line (after initial comments) as well as the final program line should be CALL JOB:TRIGGER_RESET.")
 
+
+def check_F(job_file, group, number):
+    """Check (JBI-W6).
+    
+    ARCON and ARCOFF commands should be enclosed 
+    in a call of CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"
+    immediately before the ARCON command and a 
+    call to CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS" 
+    immediately after the ARCOFF command.
+    
+    Parameters
+    ----------
+    job_file : ojb:`jobFile`
+        Object of a jobFile class.
+    group : str
+        Group of the warning.
+    number : int
+        Number of the warning.
+    """
+    for i in range(len(job_file.programlines) - 1):
+        current_line = job_file.programlines[i].strip()
+        next_line = job_file.programlines[i+1].strip()
         
+        """XOR operator: 1 ^ 0 = True, 0 ^ 1 = True
+        Check for ARCON"""
+        if (next_line.startswith("ARCON") ^ current_line.startswith("CALL JOB:TRIGGER ARGF\"SCHWEISSEN_EIN\"")):
+            print(
+    f"{file_name} - {group}{number} - [{i + len(job_file.headlines)+ 1}]: ARCON command should be enclosed in a call of CALL JOB:TRIGGER ARGF\"SCHWEISSEN_EIN\".")
+            break
+
+        #Check for ARCOF
+        elif (current_line.startswith("ARCOF") ^ next_line.startswith("CALL JOB:TRIGGER ARGF\"SCHWEISSEN_AUS\"")):
+            print( f"{file_name} - {group}{number} - [{i + len(job_file.headlines)+ 1}]: ARCOFF commands should be enclosed in a call of CALL JOB:TRIGGER ARGF\"SCHWEISSEN_AUS\".")
+            break
+        else:
+            pass
+            
+
+
 
 
 ##########################
@@ -307,6 +325,7 @@ class JobFile:
             # Rule("JBI-W", 3, logic=check_C), #finished
             # Rule("JBI-W", 4, logic=check_D), #finished
             # Rule("JBI-W", 5, logic=check_E), #finished
+            Rule("JBI-W", 6, logic = check_F) #finished
         ]
 
         for rule in rules:
