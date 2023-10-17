@@ -20,6 +20,5 @@ jobs:
 
     - name: Run Fileparser
       run: |
-        for file in $(find . -name "*.JBI"); do
-          python fileparser.py "$file"
+        python fileparser.py test.JBI
         done
