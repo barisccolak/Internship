@@ -20,5 +20,6 @@ jobs:
 
     - name: Run Fileparser
       run: |
+        cd Internship/testmodule
         python fileparser.py test.JBI
         done
