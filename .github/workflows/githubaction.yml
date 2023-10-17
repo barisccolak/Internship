@@ -18,8 +18,6 @@ jobs:
       with:
         python-version: 3.10.12
 
-    - name: Run Fileparser
+    - name: Run Python script on JOB files
       run: |
-        ./Internship/testmodule \
-        python fileparser.py test.JBI
-        done
+        find . -name "*.JBI" -exec python fileparser.py {} \;
