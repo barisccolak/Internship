@@ -22,4 +22,7 @@ jobs:
     #  run: pip install -r requirements.txt
 
     - name: Run Fileparser
-      run: python fileparser.py ${{ testmodule/files }}
+      run: |
+        find . -name "*.JBI" -print0 | while IFS= read -r -d $'\0' file; do
+          python fileparser.py "$file"
+        done
