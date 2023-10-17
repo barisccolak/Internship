@@ -1,0 +1,25 @@
+name: Run Fileparser over all the JOB Files
+on:
+  push:
+    branches:
+      - fileparser2
+
+jobs:
+  run_fileparser:
+    name: Run Fileparser on JOB Files
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.10
+
+    #- name: Install Dependencies
+    #  run: pip install -r requirements.txt
+
+    - name: Run Fileparser
+      run: python fileparser.py ${{ testmodule/files }}
