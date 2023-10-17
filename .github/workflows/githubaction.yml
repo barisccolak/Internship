@@ -18,9 +18,6 @@ jobs:
       with:
         python-version: 3.10.12
 
-    - name: Install Dependencies  # If your script requires any dependencies
-      run: pip install -r requirements.txt
-
     - name: Run Fileparser
       run: |
         for file in $(find . -name "*.JBI"); do
