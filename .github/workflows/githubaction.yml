@@ -11,15 +11,14 @@ jobs:
 
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
-        python-version: 3.10
+        python-version: 3.10.12
 
-    #- name: Install Dependencies
-    #  run: pip install -r requirements.txt
+    - name: Run Python script on JOB files
+      run: |
+        find . -name "*.JBI" -exec python testmodule/fileparser.py {} \;
 
-    - name: Run Fileparser
-      run: python fileparser.py ${{ testmodule/files }}
