@@ -32,7 +32,7 @@ class Rule:
 def check_A(job_file, group, number, file_name):
     """Check (JBI-W, 1).
 
-    If program starts with a comment line
+    Check if program starts with a comment line
     directly after the NOP statement.
 
     Parameters
@@ -55,8 +55,8 @@ def check_A(job_file, group, number, file_name):
 def check_B(job_file, group, number, file_name):
     """Check (JBI-W, 2).
 
-    Test and allow the job if program command
-    SETREG MREG# is listed unter
+    Test the job if program command
+    SETREG MREG# is listed under
     FOLDERNAME TWINCAT_KOMMUNIKATION.
 
     Parameters
@@ -113,7 +113,7 @@ def check_C(job_file, group, number, file_name):
 
     if job_file.foldername == "STANDARD" or job_file.foldername == "MAIN":
         for i, line in enumerate(job_file.programlines):
-            if line.startswith("SET USERNAME"):
+            if line.startswith("SET USERFRAME"):
                 set_flag_username = True
                 index_username = i
             elif line.startswith('CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"'):
