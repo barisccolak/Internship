@@ -1,0 +1,66 @@
+/JOB
+//NAME PUNKTE_ERZEUGEN_UF
+///FOLDERNAME INTERNE_BERECHNUNGEN
+//POS
+///NPOS 0,0,0,1,0,0
+///USER 4
+///TOOL 1
+///POSTYPE USER
+///RECTAN
+///RCONF 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+P00100=-51.450,-41.710,12.601,0.0000,0.0000,0.0000
+//ALIAS
+///LVARS 0,1,6,0,0,0,0,0
+LI000 USERFRAME
+LD000 P_X
+LD001 P_Y
+LD002 P_Z
+LD003 P_rx
+LD004 P_ry
+LD005 P_rz
+//ARGINFO
+///ARGTYPE I,D,D,D,,,,
+///COMMENT
+USERFRAME
+OFFSET_X
+OFFSET_Y
+OFFSET_Z
+
+
+
+
+//INST
+///DATE 2021/10/11 09:43
+///ATTR SC,RW
+///GROUP1 RB1
+///LVARS 0,1,6,0,0,0,0,0
+NOP
+'--------------------------------
+'Erzeugt neuen Punkt mit XYZ Off-
+'set im angegbenen User-Frame &
+'Brennerausrichtung senkrecht
+'Der Punkt wird in gloablem
+'Punkt P100 gespeichert
+'--------------------------------
+'
+'--------------------------------
+'ARGUMENTE EINLESEN - Translation
+'--------------------------------
+GETARG USERFRAME IARG#(1)
+GETARG P_X IARG#(2)
+GETARG P_Y IARG#(3)
+GETARG P_Z IARG#(4)
+'--------------------------------
+'Rotationen
+SET P_rx 0
+SET P_ry 0
+SET P_rz 0
+GETS PX100 $PX000
+CNVRT PX100 PX100 UF#(USERFRAME)
+SETE P100 (1) P_X
+SETE P100 (2) P_Y
+SETE P100 (3) P_Z
+SETE P100 (4) P_rx
+SETE P100 (5) P_ry
+SETE P100 (6) P_rz
+END

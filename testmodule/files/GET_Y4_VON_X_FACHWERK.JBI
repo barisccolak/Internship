@@ -1,0 +1,42 @@
+/JOB
+//NAME GET_Y4_VON_X_FACHWERK
+///FOLDERNAME FACHWERK
+//POS
+///NPOS 0,0,0,0,0,0
+//ALIAS
+///LVARS 1,0,2,0,0,0,0,0
+LB000 WERT_VORHANDEN
+LD000 X
+LD001 Y
+//ARGINFO
+///ARGTYPE D,,,,,,,
+///COMMENT
+X Wert
+
+
+
+
+
+
+
+//INST
+///DATE 2021/04/14 16:43
+///ATTR SC,RW
+///GROUP1 RB1
+///LVARS 1,0,2,4,0,0,0,0
+NOP
+'################################
+'Einlesen der Argumente
+GETARG X IARG#(1)
+' Schreiben der Coeffizienten
+' in Abhängigkeit des Auswertbe-
+' reiches und Schreiben d. bool-
+' Variable WERT_VORHANDEN mit
+' deren Hilfe entschieden wird
+' ob zum besagten x-Wert ein
+' Y-Wert besteht
+SET WERT_VORHANDEN 0
+SET Y 0
+SET B004 WERT_VORHANDEN
+RET Y
+END

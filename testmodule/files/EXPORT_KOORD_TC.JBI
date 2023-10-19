@@ -1,0 +1,56 @@
+/JOB
+//NAME EXPORT_KOORD_TC
+///FOLDERNAME TWINCAT_KOMMUNIKATION
+//POS
+///NPOS 0,0,0,0,0,0
+//ALIAS
+///LVARS 0,2,1,0,1,0,0,0
+LI000 REG1
+LI001 REG2
+LD000 INPUT_VALUE
+LS000 KOORD
+//ARGINFO
+///ARGTYPE D,S,,,,,,
+///COMMENT
+INPUT_VALUE
+KOORDINATE
+
+
+
+
+
+
+//INST
+///DATE 2020/06/23 15:29
+///ATTR SC,RW
+///LVARS 0,2,1,0,1,0,0,0
+NOP
+'--------------------------------
+'Dieser Job ruft den JOB
+'EXPORT_DOUBLE_TO_TC.JBI auf und
+'legt die entsprechenden Register
+'für die Koordinaten x, y und
+'z fest
+'--------------------------------
+'--------------------------------
+'Register einlesen
+'--------------------------------
+GETARG INPUT_VALUE IARG#(1)
+GETARG KOORD IARG#(2)
+'--------------------------------
+IFTHENEXP KOORD="x"
+	 SET REG1 140
+	 SET REG2 141
+ELSEIFEXP KOORD="y"
+	 SET REG1 142
+	 SET REG2 143
+ELSEIFEXP KOORD="z"
+	 SET REG1 144
+	 SET REG2 145
+ELSE
+	 MSG "Keine richtige Koordinae gewählt"
+	 JUMP *ABBRUCH
+ENDIF
+CALL JOB:EXPORT_DOUBLE_TO_TC4 ARGFINPUT_VALUE ARGFREG1 ARGFREG2
+*ABBRUCH
+END

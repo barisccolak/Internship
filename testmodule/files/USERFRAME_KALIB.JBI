@@ -1,0 +1,73 @@
+/JOB
+//NAME USERFRAME_KALIB
+///FOLDERNAME TWINCAT_KOMMUNIKATION
+//POS
+///NPOS 0,0,0,1,0,0
+///USER 4
+///TOOL 1
+///POSTYPE USER
+///RECTAN
+///RCONF 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+P00100=-51.450,-41.710,12.601,0.0000,0.0000,0.0000
+//ALIAS
+///LVARS 0,0,2,0,0,0,0,0
+LD000 V_MOVE
+LD001 USERFRAME
+//ARGINFO
+///ARGTYPE D,,,,,,,
+///COMMENT
+USERFRAME
+
+
+
+
+
+
+
+//INST
+///DATE 2020/07/07 11:04
+///ATTR SC,RW
+///GROUP1 RB1
+///LVARS 0,0,2,0,0,1,0,0
+NOP
+'ARGUMENTE EINLESEN - Translation
+'--------------------------------
+GETARG USERFRAME IARG#(1)
+'--------------------------------
+'MOVE-Geschwindigkeit
+'       [mm/s]
+CALL JOB:GET_V ARGF50 ARGF"mm/s"
+GETS V_MOVE $RV
+'--------------------------------
+'TCP Auswählen
+SFTOF
+TCPON TL#(0)
+'--------------------------------
+'Basispunkt erzeugen
+SETREG MREG#(66) LOW 0
+CALL JOB:PUNKTE_ERZEUGEN_UF ARGFUSERFRAME ARGF0 ARGF0 ARGF200000
+SET LP000 P100
+'--------------------------------
+'Punkt 0 anfahren
+MOVL LP000 V=V_MOVE
+TIMER T=0.50
+SETREG MREG#(66) LOW 1
+TIMER T=0.10
+'--------------------------------
+'Punkt 1 anfahren
+SETE LP000 (1) 100000
+MOVL LP000 V=V_MOVE
+TIMER T=0.50
+SETREG MREG#(66) LOW 2
+TIMER T=0.10
+'--------------------------------
+'Punkt 2 anfahren
+SETE LP000 (1) 0
+SETE LP000 (2) 100000
+MOVL LP000 V=V_MOVE
+TIMER T=0.50
+SETREG MREG#(66) LOW 3
+TIMER T=0.50
+SETREG MREG#(66) LOW 4
+TCPOF
+END

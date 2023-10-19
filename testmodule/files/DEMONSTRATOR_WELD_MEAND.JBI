@@ -1,0 +1,118 @@
+/JOB
+//NAME DEMONSTRATOR_WELD_MEAND
+///FOLDERNAME DEMONSTRATOR
+//POS
+///NPOS 0,0,0,0,0,0
+//ALIAS
+///LVARS 0,2,6,0,0,0,0,0
+LI000 Point
+LI001 Points
+LD000 V_Weld
+LD001 V_Weld_Offset
+LD002 KENNLINIE
+LD003 COLOR
+LD004 V_Move
+LD005 Direction
+//ARGINFO
+///ARGTYPE I,D,D,D,,,,
+///COMMENT
+N_Weldpoints
+V_WELD
+KENNLINIE
+COLOR_MOTO_SIM
+
+
+
+
+//INST
+///DATE 2023/01/19 14:52
+///ATTR SC,RW
+///GROUP1 RB1
+///LVARS 1,2,25,0,0,0,0,0
+NOP
+GETARG Points IARG#(1)
+GETARG V_Weld IARG#(2)
+GETARG KENNLINIE IARG#(3)
+GETARG COLOR IARG#(4)
+SET V_Weld_Offset  EXPRESS V_Weld * 1
+TCPON TL#(0)
+CALL JOB:SET_TCPON ARGF0
+'MOVE-Geschwindigkeit
+'       [mm/s]
+CALL JOB:GET_V ARGF100 ARGF"mm/s"
+GETS V_Move $RV
+IFTHENEXP Points>0
+	 SUB Points 2
+	 SET Point 0
+	 SET Direction 1
+	'Punkte anfahren
+	 MOVL P[Point] V=V_Move
+	'--------------------------------
+	'Start TwinCAT and HDR record
+	 CALL JOB:TRIGGER ARGF"UI_START"
+	 TIMER T=0.10
+	 CALL JOB:XIRIS ARGF1 ARGF"VIDEO_EIN"
+	 TIMER T=1.00
+	 CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"
+	 CALL JOB:XIRIS ARGF1 ARGF"TRIG_EIN"
+	'--------------------------------
+	 DOUT OT#(COLOR) ON
+	 ADD Point Direction
+	 SET D031 Point
+	 ARCON ASF#(KENNLINIE)
+	 MOVL P[Point] V=V_Weld_Offset
+	 ADD Point Direction
+	 SET D031 Point
+	 WHILEEXP Point<=Points
+		 MOVL P[Point] V=V_Weld_Offset
+		 ADD Point Direction
+		 SET D031 Point
+		 MOVL P[Point] V=V_Weld
+		 ADD Point Direction
+		 SET D031 Point
+	 ENDWHILE
+ELSEIFEXP Points<0
+	 MUL Points -1
+	 SUB Points 1
+	 SET D030 Points
+	 SET Point Points
+	 SET Direction -1
+	'Punkte anfahren
+	 MOVL P[Point] V=V_Move
+	'--------------------------------
+	'Start TwinCAT and HDR record
+	 CALL JOB:TRIGGER ARGF"UI_START"
+	 TIMER T=0.10
+	 CALL JOB:XIRIS ARGF1 ARGF"VIDEO_EIN"
+	 TIMER T=1.00
+	 CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"
+	 CALL JOB:XIRIS ARGF1 ARGF"TRIG_EIN"
+	'--------------------------------
+	 DOUT OT#(COLOR) ON
+	 ADD Point Direction
+	 SET D031 Point
+	 ARCON ASF#(KENNLINIE)
+	 MOVL P[Point] V=V_Weld_Offset
+	 ADD Point Direction
+	 SET D031 Point
+	 WHILEEXP Point>=0
+		 MOVL P[Point] V=V_Weld_Offset
+		 ADD Point Direction
+		 SET D031 Point
+		 MOVL P[Point] V=V_Weld
+		 ADD Point Direction
+		 SET D031 Point
+	 ENDWHILE
+ENDIF
+ARCOF AEF#(KENNLINIE)
+DOUT OT#(COLOR) OFF
+'--------------------------------
+'Stop TwinCAT and HDR record
+CALL JOB:XIRIS ARGF1 ARGF"TRIG_AUS"
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"
+TIMER T=1.00
+CALL JOB:XIRIS ARGF1 ARGF"VIDEO_AUS"
+CALL JOB:TRIGGER ARGF"UI_STOP"
+'--------------------------------
+TCPOF
+END

@@ -1,0 +1,49 @@
+/JOB
+//NAME TEST_XIRIS
+///FOLDERNAME TEST_JOBS
+//POS
+///NPOS 0,0,0,0,0,0
+//ALIAS
+///LVARS 0,0,1,0,0,0,0,0
+LD000 XIRIS_NR
+//INST
+///DATE 2023/09/25 13:51
+///ATTR SC,RW
+///GROUP1 RB1
+///LVARS 0,0,1,0,0,0,0,0
+NOP
+'--------------------------------
+'Dieser Test-Job triggert
+'mehrere Xiris-Videos
+'hintereinander.
+'--------------------------------
+CALL JOB:TRIGGER_RESET
+'--------------------------------
+'IDs Eingeben
+CALL JOB:SET_IDS_FULL ARGF0 ARGF1 ARGF1 ARGF1 ARGF0
+'--------------------------------
+'Kamera auswählen
+SET XIRIS_NR 1
+'--------------------------------
+'Videoaufnahme
+TIMER T=1.00
+CALL JOB:TEST_XIRIS_TRIGGER ARGFXIRIS_NR
+TIMER T=2.00
+'--------------------------------
+'naechste Videoaufnahme
+TIMER T=3.00
+CALL JOB:SET_IDS_FULL ARGF0 ARGF2 ARGF2 ARGF2 ARGF0
+'USERFRAME in TwinCAT setzen
+CALL JOB:TEST_XIRIS_TRIGGER ARGFXIRIS_NR
+TIMER T=2.00
+'--------------------------------
+'naechste Videoaufnahme
+TIMER T=3.00
+CALL JOB:SET_IDS_FULL ARGF0 ARGF3 ARGF3 ARGF3 ARGF0
+'USERFRAME in TwinCAT setzen
+CALL JOB:TEST_XIRIS_TRIGGER ARGFXIRIS_NR
+TIMER T=1.00
+'--------------------------------
+'TRIGGER RESET
+CALL JOB:TRIGGER_RESET
+END
