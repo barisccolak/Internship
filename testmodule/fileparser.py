@@ -165,7 +165,7 @@ def check_D(job_file, group, number, file_name):
             # Extract the argument number from the preceding SET_TCPON command
             tcp_call_arg = job_file.programlines[index_tcpon - 1][-2]
 
-    if argument != tcp_call_arg:
+    if (argument != tcp_call_arg) and (argument == tcp_call_arg == None):
         print(argument, tcp_call_arg)
         print(
             f"{file_name} - {group}{number} - [{index_tcpon + len(job_file.headlines)}]: When a the TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases."
@@ -302,7 +302,8 @@ class JobFile:
     def read_file(self):
         """Class method to read the file and print the content."""
         try:
-            with open(self.file_path) as file:
+            #ignore is risky! Talk with Cagtay!
+            with open(self.file_path, encoding='utf-8', errors ='ignore') as file:
                 self.lines = file.readlines()
 
                 for i, line in enumerate(self.lines):
@@ -324,7 +325,7 @@ class JobFile:
         self.name = self.headlines[1]
         self.name = self.name[self.name.index(until) :]
         self.name = self.name.strip()  # delete the empty space
-        print("Name:", self.name)
+        #print("Name:", self.name)
 
     def save_foldername(self):
         """Filter the characters in the line until ' ,'."""
@@ -332,7 +333,7 @@ class JobFile:
         self.foldername = self.headlines[2]
         self.foldername = self.foldername[self.foldername.index(until) :]
         self.foldername = self.foldername.strip()  # delete the empty space
-        print("Foldername:", self.foldername)
+       # print("Foldername:", self.foldername)
 
     def rule_list(self):
         """Contains the rules."""
