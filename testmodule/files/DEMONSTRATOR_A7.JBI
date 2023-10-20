@@ -56,8 +56,13 @@ Kennlinie
 ///GROUP1 RB1
 ///LVARS 1,3,27,0,0,0,0,0
 NOP
-TCPON TL#(0)
+'------------------------------------
+afasfa
+_
+
 CALL JOB:SET_TCPON ARGF0
+TCPON TL#(0)
+
 '################################
 'Einlesen der Argumente
 GETARG X_left IARG#(1)

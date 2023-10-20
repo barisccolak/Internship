@@ -52,6 +52,7 @@ def check_A(job_file, group, number, file_name):
         )
 
 
+############################################################################## buggy: if both of them doesn't exist, it still prints the error-
 def check_B(job_file, group, number, file_name):
     """Check (JBI-W, 2).
 
@@ -83,6 +84,9 @@ def check_B(job_file, group, number, file_name):
         print(
             f"{file_name} - {group}{number} [3] :The program command SETREG MREG# should only be allowed when the job is listed under FOLDERNAME TWINCAT_KOMMUNIKATION"
         )
+
+
+############################################################################## buggy: if both of them doesn't exist, it still prints the error-
 
 
 def check_C(job_file, group, number, file_name):
@@ -201,8 +205,10 @@ def check_E(job_file, group, number, file_name):
     lastline = None
     # List of the comment lines indexes
     comment_indexes = []
+    is_foldername_main = False
 
     if job_file.foldername == "MAIN":
+        is_foldername_main = True
         # Create a list for the comment block indexes
         for index, item in enumerate(job_file.programlines):
             if item.strip().startswith("'---"):
@@ -231,9 +237,12 @@ def check_E(job_file, group, number, file_name):
         pass
 
     else:
-        print(
-            f"{file_name} - {group}{number} - [2]: For all jobs in folder MAIN: The first program line (after initial comments) as well as the final program line should be CALL JOB:TRIGGER_RESET."
-        )
+        if is_foldername_main is True:
+            print(
+                f"{file_name} - {group}{number} - [2]: For all jobs in folder MAIN: The first program line (after initial comments) as well as the final program line should be CALL JOB:TRIGGER_RESET."
+            )
+        else:
+            pass
 
 
 def check_F(job_file, group, number, file_name):
