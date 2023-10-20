@@ -50,6 +50,7 @@ def check_A(job_file, group, number, file_name):
         print(
             f"{file_name} - {group}{number} - [{job_file.separator+2}]: Every program should start with a comment line directly after the NOP statement."
         )
+        job_file.error_flag = True
 
 
 def check_B(job_file, group, number, file_name):
@@ -75,6 +76,7 @@ def check_B(job_file, group, number, file_name):
         if i.startswith("SETREG MREG#"):
             if not job_file.foldername == "TWINCAT_KOMMUNIKATION":
                 print(f"{file_name} - {group}{number} [3] :The program command SETREG MREG# should only be allowed when the job is listed under FOLDERNAME TWINCAT_KOMMUNIKATION")
+                job_file.error_flag = True
                 break
 
 
@@ -117,6 +119,7 @@ def check_C(job_file, group, number, file_name):
             print(
                 f"{file_name} - {group}{number} [{len(job_file.headlines) + index_trigger+1}]: The command SET USERFRAME does not exist"
             )
+            job_file.error_flag = True
 
         if not (
             set_flag_username and set_flag_trigger and index_username <= index_trigger
@@ -124,6 +127,7 @@ def check_C(job_file, group, number, file_name):
             print(
                 f"{file_name} - {group}{number} [{len(job_file.headlines) + index_username+1}]: The command SET USERFRAME must be executed before the command  CALL JOB:TRIGGER ARGF PROGRAMM_EIN is called"
             )
+            job_file.error_flag = True
 
 
 def check_D(job_file, group, number, file_name):
@@ -149,7 +153,7 @@ def check_D(job_file, group, number, file_name):
     index_tcpon = 0
     is_tcpon = False
     tcp_call_arg = None
-##########################################################TCP SHOULD ACCEPT LETTERS AS INPUT 
+
     for index, item in enumerate(job_file.programlines):
         if item.startswith("TCPON TL#("):
             # Extract the argument number, third char is the argument: "(n) "
@@ -170,6 +174,7 @@ def check_D(job_file, group, number, file_name):
         print(
             f"{file_name} - {group}{number} - [{index_tcpon + len(job_file.headlines)}]: When a the TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases."
         )
+        job_file.error_flag = True
 
 
 def check_E(job_file, group, number, file_name):
@@ -231,6 +236,7 @@ def check_E(job_file, group, number, file_name):
             print(
                 f"{file_name} - {group}{number} - [2]: For all jobs in folder MAIN: The first program line (after initial comments) as well as the final program line should be CALL JOB:TRIGGER_RESET."
             )
+            job_file.error_flag = True
         else:
             pass
 
@@ -267,6 +273,7 @@ def check_F(job_file, group, number, file_name):
             print(
                 f'{file_name} - {group}{number} - [{i + len(job_file.headlines)+ 1}]: ARCON command should be enclosed in a call of CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN".'
             )
+            job_file.error_flag = True
             break
 
         # Check for ARCOF
@@ -276,6 +283,7 @@ def check_F(job_file, group, number, file_name):
             print(
                 f'{file_name} - {group}{number} - [{i + len(job_file.headlines)+ 1}]: ARCOFF commands should be enclosed in a call of CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS".'
             )
+            job_file.error_flag = True
             break
         else:
             pass
@@ -293,6 +301,7 @@ class JobFile:
         self.headlines = []
         self.programlines = []
         self.separator = None
+        self.error_flag = False
 
         self.read_file()
         self.save_name()
@@ -348,6 +357,10 @@ class JobFile:
 
         for rule in rules:
             rule.apply_rule(self, rule.group, rule.number, self.file_name)
+
+        if self.error_flag == False:
+            print(f'{self.file_name} :##### NO ERROR #####'
+            )
 
 
 ##########################
