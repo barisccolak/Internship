@@ -1,6 +1,6 @@
 /JOB
 //NAME DEMONSTRATOR_A7
-///FOLDERNAME DEMONSTRATOR
+///FOLDERNAME TWINCAT_KOMMUNIKATIO
 //POS
 ///NPOS 0,0,0,1,0,0
 ///USER 4
@@ -72,6 +72,7 @@ GETARG KENNLINIE IARG#(8)
 '################################
 SET V_weld_offset  EXPRESS V_weld * 2
 '################################
+SETR#
 SET Z Z_left
 SET Point 0
 SET Direction -1

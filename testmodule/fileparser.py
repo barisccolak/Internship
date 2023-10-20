@@ -52,7 +52,6 @@ def check_A(job_file, group, number, file_name):
         )
 
 
-############################################################################## buggy: if both of them doesn't exist, it still prints the error-
 def check_B(job_file, group, number, file_name):
     """Check (JBI-W, 2).
 
@@ -71,22 +70,12 @@ def check_B(job_file, group, number, file_name):
     file_name : str
         Name of the file.
     """
-    is_allowed_flag = False
 
     for i in job_file.programlines:
-        if (
-            i.startswith("SETREG MREG#")
-            and job_file.foldername == "TWINCAT_KOMMUNIKATION"
-        ):
-            is_allowed_flag = True
-
-    if not is_allowed_flag:
-        print(
-            f"{file_name} - {group}{number} [3] :The program command SETREG MREG# should only be allowed when the job is listed under FOLDERNAME TWINCAT_KOMMUNIKATION"
-        )
-
-
-############################################################################## buggy: if both of them doesn't exist, it still prints the error-
+        if i.startswith("SETREG MREG#"):
+            if not job_file.foldername == "TWINCAT_KOMMUNIKATION":
+                print(f"{file_name} - {group}{number} [3] :The program command SETREG MREG# should only be allowed when the job is listed under FOLDERNAME TWINCAT_KOMMUNIKATION")
+                break
 
 
 def check_C(job_file, group, number, file_name):
