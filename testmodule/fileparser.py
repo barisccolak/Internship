@@ -145,15 +145,15 @@ def check_D(job_file, group, number, file_name):
     file_name : str
         Name of the file.
     """
-    argument = 0
+    argument = None
     index_tcpon = 0
     is_tcpon = False
     tcp_call_arg = None
-
+##########################################################TCP SHOULD ACCEPT LETTERS AS INPUT 
     for index, item in enumerate(job_file.programlines):
         if item.startswith("TCPON TL#("):
             # Extract the argument number, third char is the argument: "(n) "
-            argument = int(item[-3])
+            argument = item[-3]
             index_tcpon = index
             is_tcpon = True
             break
@@ -163,9 +163,10 @@ def check_D(job_file, group, number, file_name):
             "CALL JOB:SET_TCPON ARGF"
         ):
             # Extract the argument number from the preceding SET_TCPON command
-            tcp_call_arg = int(job_file.programlines[index_tcpon - 1][-2])
+            tcp_call_arg = job_file.programlines[index_tcpon - 1][-2]
 
     if argument != tcp_call_arg:
+        print(argument, tcp_call_arg)
         print(
             f"{file_name} - {group}{number} - [{index_tcpon + len(job_file.headlines)}]: When a the TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases."
         )
