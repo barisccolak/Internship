@@ -336,13 +336,20 @@ class JobFile:
         self.name = self.name.strip()  # delete the empty space
         #print("Name:", self.name)
 
+    ##############################################################some files does not have a foldername!
     def save_foldername(self):
-        """Filter the characters in the line until ' ,'."""
-        until = " "
-        self.foldername = self.headlines[2]
-        self.foldername = self.foldername[self.foldername.index(until) :]
-        self.foldername = self.foldername.strip()  # delete the empty space
-       # print("Foldername:", self.foldername)
+
+        for line in self.headlines:
+            if line.startswith("FOLDERNAME"):
+                # split the line with " " and take the second element from the list split ( 0 and 1) 
+                self.foldername = line.split(" ", 1)[1].strip()
+                #print("Foldername:", self.foldername)
+                return
+
+        # If the "FOLDERNAME" line is not found, set the folder name to NOFOLDERNAME
+        self.foldername = "!!NOFOLDERNAME!!"
+        #print("Foldername:", self.foldername)
+        
 
     def rule_list(self):
         """Contains the rules."""
@@ -372,7 +379,7 @@ def input_file(file_path):
 def input_folder(file_path):
     """Recieve single input folder."""
     for root, dirs, files in os.walk(file_path):
-        for file in files:
+        for file in sorted(files):
             if file.endswith(".JBI"):
                 file_path = os.path.join(root, file)  # creates a full path
                 job = JobFile(file_path)
