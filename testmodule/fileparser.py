@@ -406,7 +406,7 @@ class JobFile:
         for rule in rules:
             rule.apply_rule(self, rule.group, rule.number, self.file_name)
 
-        if self.error_flag == False:
+        if self.error_flag is False:
             print(f"{self.file_name} :##### NO ERROR #####")
 
 
