@@ -8,17 +8,18 @@
 
 ## Git Commands
 
-1. `git add . -n` : Shows the dry changes 
+1. `git add . -n` : Shows the dry changes
 2. `git add .` : Adds the changes
 3. `git commit -m "message"` : Commits
-4. `git <x> --help` : Documentation for x
-5. `git --help` : Documentation for Git
-6. `git push` : Pushes the commit
-7. `git checkout branch_name` : Changes the branch
-8. `git checkout -b branch_name` : Create and changes the branch
-9. `git push --set-upstream origin sidebranch` : Pushes and sets upstream for current branch
-10. `git status` : Shows the status
-11. `git checkout -b ＜new-branch＞` : Creates and changes to new branch
+4. `git commit -a -m "message"` : Adds and commits
+5. `git <x> --help` : Documentation for x
+6. `git --help` : Documentation for Git
+7. `git push` : Pushes the commit
+8. `git checkout branch_name` : Changes the branch
+9. `git checkout -b branch_name` : Create and changes the branch
+10. `git push --set-upstream origin sidebranch` : Pushes and sets upstream for current branch
+11. `git status` : Shows the status
+12. `git checkout -b ＜new-branch＞` : Creates and changes to new branch
 
 
 ## Conda Commands
@@ -37,7 +38,7 @@
 1. `pip uninstall pint` : remove a package previously installed using `pip`
 1. `pip install -e .` : Installs the local folder as python package
 
-## Command Shell 
+## Command Shell
 
 1. `python`
 2. `ipython`
@@ -50,12 +51,12 @@
 2. ruff check .
 3. ruff check --fix .
 4. git diff : Shows the differences.
-5. 
+5.
 
 ***
-## quickstart 
+## quickstart
 
-This version of Fileparser contains two functions: `write` and `read`. 
+This version of Fileparser contains two functions: `write` and `read`.
 
 ## user guide
 
@@ -81,4 +82,3 @@ To read a text file use class method `testmodule.read`:
     `python -m testmodule.read`
 
 Supply the path of the target file.
-
