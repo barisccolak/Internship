@@ -3,6 +3,8 @@
 import os
 import sys
 
+_encoding = "cp1252"  # default yaskawa file encoding
+
 
 class Rule:
     """It defines the class Rule."""
@@ -75,7 +77,9 @@ def check_B(job_file, group, number, file_name):
     for i in job_file.programlines:
         if i.startswith("SETREG MREG#"):
             if not job_file.foldername == "TWINCAT_KOMMUNIKATION":
-                print(f"{file_name} - {group}{number} [3] :The program command SETREG MREG# should only be allowed when the job is listed under FOLDERNAME TWINCAT_KOMMUNIKATION")
+                print(
+                    f"{file_name} - {group}{number} [3] :The program command SETREG MREG# should only be allowed when the job is listed under FOLDERNAME TWINCAT_KOMMUNIKATION"
+                )
                 job_file.error_flag = True
                 break
 
@@ -302,17 +306,56 @@ class JobFile:
         self.programlines = []
         self.separator = None
         self.error_flag = False
+        #    self.LVARS = {}
 
         self.read_file()
         self.save_name()
         self.save_foldername()
+
+        # self.read_LVARS()
+        # self.print_LVARS()
+
         self.rule_list()
+
+    def read_LVARS(self):
+        start_parsing = False  # Flag to indicate when to start parsing LVARS section
+        parts = []
+        for line in self.headlines:
+            if line.startswith("///LVARS"):
+                start_parsing = True
+                continue
+            if start_parsing:
+                parts = line.strip().split(" ")  # Split the line into parts
+
+            if len(parts) == 2:
+
+                variable_name = parts[1]
+                variable_type = (parts[0])[:2]
+
+                # take
+                variable_type = parts[0]
+                variable_number = parts[1].strip(",")
+                variable_name = line.split(" ", 2)[2].strip()
+
+                # store
+                self.LVARS[variable_name] = (variable_type, variable_number)
+
+            if start_parsing and line.startswith("///"):
+                start_parsing = (
+                    False  # Stop parsing when another /// section is encountered
+                )
+
+    def print_LVARS(self):
+        print("LVARS Dictionary:")
+        for variable, (var_type, var_number) in self.LVARS.items():
+            print(f"{variable}: ({var_type}, {var_number})")
 
     def read_file(self):
         """Class method to read the file and print the content."""
         try:
-            #ignore is risky! Talk with Cagtay!
-            with open(self.file_path, encoding='utf-8', errors ='ignore') as file:
+            # ignore is risky! Talk with Cagtay!
+            # with open(self.file_path, encoding='utf-8', errors ='ignore'
+            with open(self.file_path, encoding=_encoding) as file:
                 self.lines = file.readlines()
 
                 for i, line in enumerate(self.lines):
@@ -334,22 +377,20 @@ class JobFile:
         self.name = self.headlines[1]
         self.name = self.name[self.name.index(until) :]
         self.name = self.name.strip()  # delete the empty space
-        #print("Name:", self.name)
+        # print("Name:", self.name)
 
-    ##############################################################some files does not have a foldername!
     def save_foldername(self):
 
         for line in self.headlines:
             if line.startswith("FOLDERNAME"):
-                # split the line with " " and take the second element from the list split ( 0 and 1) 
+                # split the line with " " and take the second element from the list split ( 0 and 1)
                 self.foldername = line.split(" ", 1)[1].strip()
-                #print("Foldername:", self.foldername)
+                # print("Foldername:", self.foldername)
                 return
 
         # If the "FOLDERNAME" line is not found, set the folder name to NOFOLDERNAME
         self.foldername = "!!NOFOLDERNAME!!"
-        #print("Foldername:", self.foldername)
-        
+        # print("Foldername:", self.foldername)
 
     def rule_list(self):
         """Contains the rules."""
@@ -366,8 +407,7 @@ class JobFile:
             rule.apply_rule(self, rule.group, rule.number, self.file_name)
 
         if self.error_flag == False:
-            print(f'{self.file_name} :##### NO ERROR #####'
-            )
+            print(f"{self.file_name} :##### NO ERROR #####")
 
 
 ##########################

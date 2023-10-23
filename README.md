@@ -8,7 +8,7 @@
 
 ## Git Commands
 
-1. `git add . -n` : Shows the dry changes 
+1. `git add . -n` : Shows the dry changes
 2. `git add .` : Adds the changes
 3. `git commit -m "message"` : Commits
 4. `git <x> --help` : Documentation for x
@@ -37,7 +37,7 @@
 1. `pip uninstall pint` : remove a package previously installed using `pip`
 1. `pip install -e .` : Installs the local folder as python package
 
-## Command Shell 
+## Command Shell
 
 1. `python`
 2. `ipython`
@@ -50,12 +50,12 @@
 2. ruff check .
 3. ruff check --fix .
 4. git diff : Shows the differences.
-5. 
+5.
 
 ***
-## quickstart 
+## quickstart
 
-This version of Fileparser contains two functions: `write` and `read`. 
+This version of Fileparser contains two functions: `write` and `read`.
 
 ## user guide
 
@@ -81,4 +81,3 @@ To read a text file use class method `testmodule.read`:
     `python -m testmodule.read`
 
 Supply the path of the target file.
-

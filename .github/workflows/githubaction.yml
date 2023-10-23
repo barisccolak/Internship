@@ -21,4 +21,3 @@ jobs:
     - name: Run Python script on JOB files
       run: |
         find . -name "*.JBI" -exec python testmodule/fileparser.py {} \;
-
