@@ -29,6 +29,7 @@ class Rule:
             Name of the file.
         """
         self.logic(job_file, group, number, file_name)
+        # add warning prints here.
 
 
 def check_A(job_file, group, number, file_name):
@@ -306,14 +307,14 @@ class JobFile:
         self.programlines = []
         self.separator = None
         self.error_flag = False
-        #    self.LVARS = {}
+        self.LVARS = {}
 
         self.read_file()
         self.save_name()
         self.save_foldername()
 
-        # self.read_LVARS()
-        # self.print_LVARS()
+        self.read_LVARS()
+        self.print_LVARS()
 
         self.rule_list()
 
@@ -324,25 +325,25 @@ class JobFile:
             if line.startswith("///LVARS"):
                 start_parsing = True
                 continue
+
             if start_parsing:
+                if line.startswith("/"):  # Stop when parameters ends
+                    start_parsing = False
+
                 parts = line.strip().split(" ")  # Split the line into parts
 
             if len(parts) == 2:
-
-                variable_name = parts[1]
-                variable_type = (parts[0])[:2]
-
                 # take
-                variable_type = parts[0]
-                variable_number = parts[1].strip(",")
-                variable_name = line.split(" ", 2)[2].strip()
+                variable_name = parts[1].strip()
+                variable_type = parts[0][:2]
+                variable_number = parts[0][2:].strip()
 
                 # store
                 self.LVARS[variable_name] = (variable_type, variable_number)
 
-            if start_parsing and line.startswith("///"):
+            if start_parsing and line.startswith("///LVARS"):
                 start_parsing = (
-                    False  # Stop parsing when another /// section is encountered
+                    False  # Stop parsing when another ///LVARS section is encountered
                 )
 
     def print_LVARS(self):
@@ -380,7 +381,6 @@ class JobFile:
         # print("Name:", self.name)
 
     def save_foldername(self):
-
         for line in self.headlines:
             if line.startswith("FOLDERNAME"):
                 # split the line with " " and take the second element from the list split ( 0 and 1)
