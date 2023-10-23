@@ -32,6 +32,9 @@ class Rule:
         # add warning prints here.
 
 
+
+
+
 def check_A(job_file, group, number, file_name):
     """Check (JBI-W, 1).
 
@@ -293,6 +296,9 @@ def check_F(job_file, group, number, file_name):
         else:
             pass
 
+
+
+    
 
 ##########################
 class JobFile:
