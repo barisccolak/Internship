@@ -74,8 +74,8 @@ def check_B(job_file, group, number, file_name):
         Name of the file.
     """
 
-    for i in job_file.programlines:
-        if i.startswith("SETREG MREG#"):
+    for line in job_file.programlines:
+        if line.startswith("SETREG MREG#"):
             if not job_file.foldername == "TWINCAT_KOMMUNIKATION":
                 print(
                     f"{file_name} - {group}{number} [3] :The program command SETREG MREG# should only be allowed when the job is listed under FOLDERNAME TWINCAT_KOMMUNIKATION"
@@ -87,11 +87,9 @@ def check_B(job_file, group, number, file_name):
 def check_C(job_file, group, number, file_name):
     """Check (JBI-W3).
 
-    If the job is in the folder STANDARD or
-    MAIN, the line SET USERFRAME n must be
-    present, where n is any numerical value.
-    The command SET USERFRAME must be executed
-    before the command
+    If the job is in the folder STANDARD or MAIN, the line SET USERFRAME n
+    must be present, where n is any numerical value. The command 
+    SET USERFRAME must be executed before the command 
     CALL JOB:TRIGGER ARGF"PROGRAMM_EIN" is called.
 
     Parameters
@@ -160,8 +158,8 @@ def check_D(job_file, group, number, file_name):
 
     for index, item in enumerate(job_file.programlines):
         if item.startswith("TCPON TL#("):
-            # Extract the argument number, third char is the argument: "(n) "
-            argument = item[-3]
+            argument = item[10:-3].strip()
+            argument = argument[:-1]
             index_tcpon = index
             is_tcpon = True
             break
@@ -170,11 +168,10 @@ def check_D(job_file, group, number, file_name):
         if index_tcpon > 0 and job_file.programlines[index_tcpon - 1].startswith(
             "CALL JOB:SET_TCPON ARGF"
         ):
-            # Extract the argument number from the preceding SET_TCPON command
-            tcp_call_arg = job_file.programlines[index_tcpon - 1][-2]
-
-    if (argument != tcp_call_arg) and (argument == tcp_call_arg == None):
-        print(argument, tcp_call_arg)
+            tcp_call_arg = job_file.programlines[index_tcpon - 1][23:].strip()
+    
+    if (argument != tcp_call_arg) or (argument == tcp_call_arg == None):
+        
         print(
             f"{file_name} - {group}{number} - [{index_tcpon + len(job_file.headlines)}]: When a the TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases."
         )
@@ -344,26 +341,26 @@ class JobFile:
         self.name = self.headlines[1]
         self.name = self.name[self.name.index(until) :]
         self.name = self.name.strip()  # delete the empty space
-        # print("Name:", self.name)
+        print("Name:", self.name)
 
     def save_foldername(self):
 
         for line in self.headlines:
-            if line.startswith("FOLDERNAME"):
+            if line.startswith("///FOLDERNAME"):
                 # split the line with " " and take the second element from the list split ( 0 and 1)
                 self.foldername = line.split(" ", 1)[1].strip()
-                # print("Foldername:", self.foldername)
+                print("Foldername:", self.foldername)
                 return
 
         # If the "FOLDERNAME" line is not found, set the folder name to NOFOLDERNAME
         self.foldername = "!!NOFOLDERNAME!!"
-        # print("Foldername:", self.foldername)
+        #print("Foldername:", self.foldername)
 
     def rule_list(self):
         """Contains the rules."""
         rules = [
             Rule("JBI-W", 1, logic=check_A),  # finished
-            Rule("JBI-W", 2, logic=check_B),  # finished
+            Rule("JBI-W", 2, logic=check_B),  # tested
             Rule("JBI-W", 3, logic=check_C),  # finished
             Rule("JBI-W", 4, logic=check_D),  # finished
             Rule("JBI-W", 5, logic=check_E),  # finished
