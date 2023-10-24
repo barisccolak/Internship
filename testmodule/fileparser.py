@@ -48,7 +48,7 @@ def check_A(job_file, group, number, file_name):
     file_name : str
         Name of the file.
     """
-    if not job_file.programlines[1].startswith("'---------------"):
+    if not job_file.programlines[1].startswith("'"):
         print(
             f"{file_name} - {group}{number} - [{job_file.separator+2}]: Every program should start with a comment line directly after the NOP statement."
         )
@@ -110,7 +110,7 @@ def check_C(job_file, group, number, file_name):
     index_username = 0
     index_trigger = 0
 
-    if job_file.foldername == "STANDARD" or job_file.foldername == "MAIN":
+    if job_file.foldername in ["STANDARD", "MAIN"]:
         for i, line in enumerate(job_file.programlines):
             if line.startswith("SET USERFRAME"):
                 set_flag_username = True

@@ -1,8 +1,8 @@
 name: Run Fileparser over all the JOB Files
 on:
   push:
-    branches:
-      - fileparser2
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
   run_fileparser:
