@@ -304,7 +304,7 @@ def check_F(job_file, group, number, file_name):
 class JobFile:
     """Public class to define jobFile."""
 
-    def __init__(self, file_path):
+    def __init__(self, file_path):       
         self.file_path = file_path
         self.file_name = os.path.basename(file_path)
         self.foldername = None
