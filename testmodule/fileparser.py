@@ -88,9 +88,8 @@ def check_C(job_file, group, number, file_name):
     """Check (JBI-W3).
 
     If the job is in the folder STANDARD or MAIN, the line SET USERFRAME n
-    must be present, where n is any numerical value. The command 
-    SET USERFRAME must be executed before the command 
-    CALL JOB:TRIGGER ARGF"PROGRAMM_EIN" is called.
+    must be present, where n is any numerical value. The command SET USERFRAME
+    must be executed before the command CALL JOB:TRIGGER ARGF"PROGRAMM_EIN" is called.
 
     Parameters
     ----------
@@ -117,19 +116,23 @@ def check_C(job_file, group, number, file_name):
                 set_flag_trigger = True
                 index_trigger = i
 
-        if set_flag_username is False:
+        if not set_flag_username:
             print(
                 f"{file_name} - {group}{number} [{len(job_file.headlines) + index_trigger+1}]: The command SET USERFRAME does not exist"
             )
             job_file.error_flag = True
-
-        if not (
-            set_flag_username and set_flag_trigger and index_username <= index_trigger
-        ):
+        elif not set_flag_trigger:
             print(
-                f"{file_name} - {group}{number} [{len(job_file.headlines) + index_username+1}]: The command SET USERFRAME must be executed before the command  CALL JOB:TRIGGER ARGF PROGRAMM_EIN is called"
+                f"{file_name} - {group}{number} [{len(job_file.headlines) + index_username+1}]: The command SET USERFRAME is present, but CALL JOB:TRIGGER ARGF\"PROGRAMM_EIN\" is not present"
             )
             job_file.error_flag = True
+
+        if set_flag_username and set_flag_trigger and index_username > index_trigger:
+            print(
+                f"{file_name} - {group}{number} [{len(job_file.headlines) + index_username+1}]: The command SET USERFRAME must be executed before the command CALL JOB:TRIGGER ARGF PROGRAMM_EIN is called"
+            )
+            job_file.error_flag = True
+
 
 
 def check_D(job_file, group, number, file_name):
@@ -158,8 +161,10 @@ def check_D(job_file, group, number, file_name):
 
     for index, item in enumerate(job_file.programlines):
         if item.startswith("TCPON TL#("):
-            argument = item[10:-3].strip()
-            argument = argument[:-1]
+            start_index = item.find("(")
+            end_index = item.find(")", start_index)
+            
+            argument = item[start_index + 1 : end_index]
             index_tcpon = index
             is_tcpon = True
             break
@@ -169,6 +174,8 @@ def check_D(job_file, group, number, file_name):
             "CALL JOB:SET_TCPON ARGF"
         ):
             tcp_call_arg = job_file.programlines[index_tcpon - 1][23:].strip()
+    print("a:" + argument)
+    print("b: "+ tcp_call_arg)
     
     if (argument != tcp_call_arg) or (argument == tcp_call_arg == None):
         
