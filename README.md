@@ -16,7 +16,7 @@ To check the rules for a single `.JBI` file:
 To check the rules for all files in a folder:
 
     python fileparser.py <your-path>
-    
+
 ## List of error codes
 
 - w1 : job should start with a comment line
