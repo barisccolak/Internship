@@ -1,7 +1,9 @@
 """Fileparser recieves JBI data and tests their suitability."""
 
-import os
+
 import sys
+import os
+from pathlib import Path
 
 _encoding = "cp1252"  # default yaskawa file encoding
 
@@ -14,7 +16,7 @@ class Rule:
         self.number = number
         self.logic = logic
 
-    def apply_rule(self, job_file, group, number):
+    def apply_rule(self, job_file):
         """Recieve rule and choose logic.
 
         Parameters
@@ -26,7 +28,7 @@ class Rule:
         number : int
             Number of the warning.
         """
-        self.logic(job_file, group, number)
+        return self.logic(job_file, self.group, self.number)
 
 
 def check_A(job_file, group, number):
@@ -42,12 +44,17 @@ def check_A(job_file, group, number):
         Group of the warning.
     number : int
         Number of the warning.
+
+    Returns
+    -------
+    warnings : array
+        Error messages.
     """
     if not job_file.programlines[1].startswith("'"):
-        print(
-            f"{job_file.file_name} - {group}{number} - [{job_file.separator+2}]: Every program should start with a comment line directly after the NOP statement."
-        )
         job_file.error_flag = True
+        line = job_file.separator + 2 
+        msg = "Every program should start with a comment line directly after the NOP statement."
+        return (group, number, line, msg)
 
 
 def check_B(job_file, group, number):
@@ -69,11 +76,9 @@ def check_B(job_file, group, number):
     for line in job_file.programlines:
         if line.startswith("SETREG MREG#"):
             if not job_file.foldername == "TWINCAT_KOMMUNIKATION":
-                print(
-                    f"{job_file.file_name} - {group}{number} [3] :The program command SETREG MREG# should only be allowed when the job is listed under FOLDERNAME TWINCAT_KOMMUNIKATION"
-                )
                 job_file.error_flag = True
-                break
+                msg = "The program command SETREG MREG# should only be allowed when the job is listed under FOLDERNAME TWINCAT_KOMMUNIKATION\""
+                return (group, number, 3, msg)
 
 
 def check_C(job_file, group, number):
@@ -105,23 +110,24 @@ def check_C(job_file, group, number):
             elif line.startswith("CALL JOB:TRIGGER ARGF\"PROGRAMM_EIN\""):
                 set_flag_trigger = True
                 index_trigger = i
-
+        
         if not set_flag_username:
-            print(
-                f"{job_file.file_name} - {group}{number} [{len(job_file.headlines) + index_trigger+1}]: The command SET USERFRAME does not exist"
-            )
-            job_file.error_flag = True
-        elif not set_flag_trigger:
-            print(
-                f"{job_file.file_name} - {group}{number} [{len(job_file.headlines) + index_username+1}]: The command SET USERFRAME is present, but CALL JOB:TRIGGER ARGF\"PROGRAMM_EIN\" is not present"
-            )
-            job_file.error_flag = True
+            msg = "The command SET USERFRAME does not exist"
+            line = len(job_file.headlines) + index_trigger + 1
+            job_file.error_flag = True   
+            return (group, number, line, msg)
 
+        elif not set_flag_trigger:
+            msg = "The command SET USERFRAME is present, but CALL JOB:TRIGGER ARGF\"PROGRAMM_EIN\" is not present"
+            line = len(job_file.headlines) + index_username + 1
+            job_file.error_flag = True   
+            return (group, number, line, msg)            
+            
         if set_flag_username and set_flag_trigger and index_username > index_trigger:
-            print(
-                f"{job_file.file_name} - {group}{number} [{len(job_file.headlines) + index_username+1}]: The command SET USERFRAME must be executed before the command CALL JOB:TRIGGER ARGF PROGRAMM_EIN is called"
-            )
-            job_file.error_flag = True
+            msg = "The command SET USERFRAME must be executed before the command CALL JOB:TRIGGER ARGF PROGRAMM_EIN is called"
+            line = len(job_file.headlines) + index_username + 1
+            job_file.error_flag = True   
+            return (group, number, line, msg)
 
 
 
@@ -162,10 +168,12 @@ def check_D(job_file, group, number):
             tcp_call_arg = job_file.programlines[index_tcpon - 1][23:].strip()
             
     if (argument != tcp_call_arg) or (argument == tcp_call_arg == None):
-        print(
-            f"{job_file.file_name} - {group}{number} - [{index_tcpon + len(job_file.headlines)}]: When a the TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases."
-        )
+        line = index_tcpon + len(job_file.headlines)
+        msg = " When a the TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases."
+
         job_file.error_flag = True
+        
+        return (group, number, line, msg)
 
 
 def check_E(job_file, group, number):
@@ -183,42 +191,15 @@ def check_E(job_file, group, number):
     number : int
         Number of the warning.
     """
-    firstline = None
-    lastline = None
-    comment_indexes = []
-    is_foldername_main = False
 
+    
     if job_file.foldername == "MAIN":
         is_foldername_main = True
-        for index, item in enumerate(job_file.programlines):
-            if item.strip().startswith("'"):
-                comment_indexes.append(index)
+        command_indexes = [(i,line.strip()) for i,line in enumerate(job_file.programlines) if not line.startswith("'")]
+        if not command_indexes[1][1] == command_indexes[-2][1] == "CALL JOB:TRIGGER_RESET":
+            msg = "For all jobs in folder MAIN: The first program line (after initial comments) as well as the final program line should be CALL JOB:TRIGGER_RESET."
+            return (group, number, None, msg)
 
-        # firstline saver: If the line after initial comment
-        # block contains a single line comment, skip this line and save the firstline.
-        if job_file.programlines[comment_indexes[1] + 1].strip().startswith("'"):
-            firstline = job_file.programlines[comment_indexes[1] + 2].strip()
-        else:
-            firstline = job_file.programlines[comment_indexes[1] + 1].strip()
-
-        # lastline saver: If the previous line from END command is an " ",
-        # skip this line and save one before as lastline.
-        if (job_file.programlines[-2]).isspace():
-            lastline = job_file.programlines[-3].strip()
-        else:
-            lastline = job_file.programlines[-2].strip()
-
-    if firstline == lastline == "CALL JOB:TRIGGER_RESET":
-        pass
-
-    else:
-        if is_foldername_main is True:
-            print(
-                f"{job_file.file_name} - {group}{number} - [2]: For all jobs in folder MAIN: The first program line (after initial comments) as well as the final program line should be CALL JOB:TRIGGER_RESET."
-            )
-            job_file.error_flag = True
-        else:
-            pass
 
 
 def check_F(job_file, group, number):
@@ -241,26 +222,26 @@ def check_F(job_file, group, number):
         current_line = job_file.programlines[i].strip()
         next_line = job_file.programlines[i + 1].strip()
 
-        """XOR operator: 1 ^ 0 = True, 0 ^ 1 = True
-        Check for ARCON"""
+        #XOR operator: 1 ^ 0 = True, 0 ^ 1 = True
+        #Check for ARCON
         if next_line.startswith("ARCON") ^ current_line.startswith(
             'CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"'
         ):
-            print(
-                f'{job_file.file_name} - {group}{number} - [{i + len(job_file.headlines)+ 1}]: ARCON command should be enclosed in a call of CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN".'
-            )
             job_file.error_flag = True
-            break
+            line = i + len(job_file.headlines) + 1
+            msg = " ARCON command should be enclosed in a call of CALL JOB:TRIGGER ARGF\"SCHWEISSEN_EIN\""
+            return (group, number, line, msg)
+            
 
         # Check for ARCOF
         elif current_line.startswith("ARCOF") ^ next_line.startswith(
             'CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"'
         ):
-            print(
-                f'{job_file.file_name} - {group}{number} - [{i + len(job_file.headlines)+ 1}]: ARCOFF commands should be enclosed in a call of CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS".'
-            )
             job_file.error_flag = True
-            break
+            line = i + len(job_file.headlines) + 1
+            msg = " ARCOFF command should be enclosed in a call of CALL JOB:TRIGGER ARGF\"SCHWEISSEN_AUS\""
+            return (group, number, line, msg)
+            
         else:
             pass
 
@@ -278,12 +259,12 @@ class JobFile:
         self.programlines = []
         self.separator = None
         self.error_flag = False
+        
+        self.warnings = []
 
         self.read_file()
         self.save_name()
         self.save_foldername()
-
-        self.rule_list()
 
     def read_file(self):
         """Class method to read the file and print the content."""
@@ -310,7 +291,6 @@ class JobFile:
         self.name = self.headlines[1]
         self.name = self.name[self.name.index(until) :]
         self.name = self.name.strip()  # delete the empty space
-        print("Name:", self.name)
 
     def save_foldername(self):
 
@@ -319,34 +299,22 @@ class JobFile:
                 # split the line with " " and take the second element from the
                 # list split ( 0 and 1)
                 self.foldername = line.split(" ", 1)[1].strip()
-                print("Foldername:", self.foldername)
                 return
 
 
         self.foldername = "!!NOFOLDERNAME!!"
-
-    def rule_list(self):
-        """Contains the rules."""
-        rules = [
-            Rule("JBI-W", 1, logic=check_A),  # tested
-            Rule("JBI-W", 2, logic=check_B),  # tested
-            Rule("JBI-W", 3, logic=check_C),  # tested
-            Rule("JBI-W", 4, logic=check_D),  # finished
-            Rule("JBI-W", 5, logic=check_E),  # finished
-            Rule("JBI-W", 6, logic=check_F),  # finished
-        ]
-
-        for rule in rules:
-            rule.apply_rule(self, rule.group, rule.number)
-
-        if self.error_flag is False:
-            print(f"{self.file_name} :##### NO ERROR #####")
 
 
 ##########################
 def input_file(file_path):
     """Recieve single input file."""
     job = JobFile(file_path)
+
+    for rule in rules:
+        result = rule.apply_rule(job)
+        if result is not None:
+            warning = result[0] + str(result[1]) + " [" + str(result[2]) + "] : " + result[3] 
+            print(warning)
 
 
 def input_folder(file_path):
@@ -358,31 +326,42 @@ def input_folder(file_path):
                 job = JobFile(file_path)
 
 
-def input_files(file_paths):
-    """Recieve multiple files as input."""
-    for file_path in file_paths:
-        if os.path.isfile(file_path):
-            input_file(file_path)
-        else:
-            print(f"Skipping invalid file: {file_path}")
 
+rules = [
+    Rule("JBI-W", 1, logic=check_A),  
+    Rule("JBI-W", 2, logic=check_B), 
+    Rule("JBI-W", 3, logic=check_C),
+    Rule("JBI-W", 4, logic=check_D),  
+    Rule("JBI-W", 5, logic=check_E),  
+    Rule("JBI-W", 6, logic=check_F),  
+]
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Wrong input.")
-        sys.exit(1)
-        
-    # ignore the first one which is fileparser.py
-    inputs = sys.argv[1:]  
 
-    if len(inputs) > 1:
-        input_files(inputs)
-    else:
-        input = inputs[0]
-
-        if os.path.isfile(input):
-            input_file(input)
-        elif os.path.isdir(input):
-            input_folder(input)
+    file_path = "/mnt/scratch/bcolak/Internship/testmodule/"
+    p = Path(file_path)
+    
+    files = []
+    
+    try: 
+        if p.is_file():
+            files = [p]
+        elif p.is_dir():
+            files = sorted(p.glob("*.JBI"))
+    
         else:
-            print(f"Invalid path: {input}")
+            raise ValueError("Wrong input.")
+            
+    except ValueError as e:
+        print(e)
+        
+    
+    for file in files:
+        job = JobFile(file)
+        for rule in rules:
+            result = rule.apply_rule(job)
+            if result is not None:
+                warning = result[0] + str(result[1]) + " [" + str(result[2]) + "] : " + result[3] 
+                print(warning)
+    
+        
