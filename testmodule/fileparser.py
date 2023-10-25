@@ -17,13 +17,12 @@ class JobFile:
         self.rule_list()
 
         self.read_LVARS()
-        self.print_LVARS()
-
 
 
     def read_LVARS(self):
         start_parsing = False  # Flag to indicate when to start parsing LVARS section
         parts = []
+        self.LVARS = {}
         for line in self.headlines:
             if line.startswith("///LVARS"):
                 start_parsing = True
