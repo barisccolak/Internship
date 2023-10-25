@@ -56,6 +56,7 @@ def check_A(job_file, group, number):
         return (group, number, line, msg)
 
 
+
 def check_B(job_file, group, number):
     """Check (JBI-W, 2).
 
