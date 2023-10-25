@@ -14,7 +14,7 @@ class Rule:
         self.number = number
         self.logic = logic
 
-    def apply_rule(self, job_file, group, number, file_name):
+    def apply_rule(self, job_file, group, number):
         """Recieve rule and choose logic.
 
         Parameters
@@ -25,17 +25,14 @@ class Rule:
             Group of the warning.
         number : int
             Number of the warning.
-        file_name : str
-            Name of the file.
         """
-        self.logic(job_file, group, number, file_name)
+        self.logic(job_file, group, number)
 
 
-def check_A(job_file, group, number, file_name):
+def check_A(job_file, group, number):
     """Check (JBI-W, 1).
 
-    Check if program starts with a comment line
-    directly after the NOP statement.
+    Check if program starts with a comment line directly after the NOP statement.
 
     Parameters
     ----------
@@ -45,22 +42,19 @@ def check_A(job_file, group, number, file_name):
         Group of the warning.
     number : int
         Number of the warning.
-    file_name : str
-        Name of the file.
     """
     if not job_file.programlines[1].startswith("'"):
         print(
-            f"{file_name} - {group}{number} - [{job_file.separator+2}]: Every program should start with a comment line directly after the NOP statement."
+            f"{job_file.file_name} - {group}{number} - [{job_file.separator+2}]: Every program should start with a comment line directly after the NOP statement."
         )
         job_file.error_flag = True
 
 
-def check_B(job_file, group, number, file_name):
+def check_B(job_file, group, number):
     """Check (JBI-W, 2).
 
-    Test the job if program command
-    SETREG MREG# is listed under
-    FOLDERNAME TWINCAT_KOMMUNIKATION.
+    Test the job if program command SETREG MREG# is listed 
+    under FOLDERNAME TWINCAT_KOMMUNIKATION.
 
     Parameters
     ----------
@@ -70,21 +64,19 @@ def check_B(job_file, group, number, file_name):
         Group of the warning.
     number : int
         Number of the warning.
-    file_name : str
-        Name of the file.
     """
 
     for line in job_file.programlines:
         if line.startswith("SETREG MREG#"):
             if not job_file.foldername == "TWINCAT_KOMMUNIKATION":
                 print(
-                    f"{file_name} - {group}{number} [3] :The program command SETREG MREG# should only be allowed when the job is listed under FOLDERNAME TWINCAT_KOMMUNIKATION"
+                    f"{job_file.file_name} - {group}{number} [3] :The program command SETREG MREG# should only be allowed when the job is listed under FOLDERNAME TWINCAT_KOMMUNIKATION"
                 )
                 job_file.error_flag = True
                 break
 
 
-def check_C(job_file, group, number, file_name):
+def check_C(job_file, group, number):
     """Check (JBI-W3).
 
     If the job is in the folder STANDARD or MAIN, the line SET USERFRAME n
@@ -99,8 +91,6 @@ def check_C(job_file, group, number, file_name):
         Group of the warning.
     number : int
         Number of the warning.
-    file_name : str
-        Name of the file.
     """
     set_flag_username = False
     set_flag_trigger = False
@@ -112,36 +102,34 @@ def check_C(job_file, group, number, file_name):
             if line.startswith("SET USERFRAME"):
                 set_flag_username = True
                 index_username = i
-            elif line.startswith('CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"'):
+            elif line.startswith("CALL JOB:TRIGGER ARGF\"PROGRAMM_EIN\""):
                 set_flag_trigger = True
                 index_trigger = i
 
         if not set_flag_username:
             print(
-                f"{file_name} - {group}{number} [{len(job_file.headlines) + index_trigger+1}]: The command SET USERFRAME does not exist"
+                f"{job_file.file_name} - {group}{number} [{len(job_file.headlines) + index_trigger+1}]: The command SET USERFRAME does not exist"
             )
             job_file.error_flag = True
         elif not set_flag_trigger:
             print(
-                f"{file_name} - {group}{number} [{len(job_file.headlines) + index_username+1}]: The command SET USERFRAME is present, but CALL JOB:TRIGGER ARGF\"PROGRAMM_EIN\" is not present"
+                f"{job_file.file_name} - {group}{number} [{len(job_file.headlines) + index_username+1}]: The command SET USERFRAME is present, but CALL JOB:TRIGGER ARGF\"PROGRAMM_EIN\" is not present"
             )
             job_file.error_flag = True
 
         if set_flag_username and set_flag_trigger and index_username > index_trigger:
             print(
-                f"{file_name} - {group}{number} [{len(job_file.headlines) + index_username+1}]: The command SET USERFRAME must be executed before the command CALL JOB:TRIGGER ARGF PROGRAMM_EIN is called"
+                f"{job_file.file_name} - {group}{number} [{len(job_file.headlines) + index_username+1}]: The command SET USERFRAME must be executed before the command CALL JOB:TRIGGER ARGF PROGRAMM_EIN is called"
             )
             job_file.error_flag = True
 
 
 
-def check_D(job_file, group, number, file_name):
+def check_D(job_file, group, number):
     """Check (JBI-W4).
 
-    When a the TCPON command is called,
-    the previous line must be a call to
-    CALL JOB:SET_TCPON with the same argument
-    number in both cases.
+    When a the TCPON command is called, the previous line must be a call to
+    CALL JOB:SET_TCPON with the same argument number in both cases.
 
     Parameters
     ----------
@@ -151,8 +139,6 @@ def check_D(job_file, group, number, file_name):
         Group of the warning.
     number : int
         Number of the warning.
-    file_name : str
-        Name of the file.
     """
     argument = None
     index_tcpon = 0
@@ -168,30 +154,25 @@ def check_D(job_file, group, number, file_name):
             index_tcpon = index
             is_tcpon = True
             break
-
+            
     if is_tcpon:
         if index_tcpon > 0 and job_file.programlines[index_tcpon - 1].startswith(
             "CALL JOB:SET_TCPON ARGF"
         ):
             tcp_call_arg = job_file.programlines[index_tcpon - 1][23:].strip()
-    print("a:" + argument)
-    print("b: "+ tcp_call_arg)
-    
+            
     if (argument != tcp_call_arg) or (argument == tcp_call_arg == None):
-        
         print(
-            f"{file_name} - {group}{number} - [{index_tcpon + len(job_file.headlines)}]: When a the TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases."
+            f"{job_file.file_name} - {group}{number} - [{index_tcpon + len(job_file.headlines)}]: When a the TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases."
         )
         job_file.error_flag = True
 
 
-def check_E(job_file, group, number, file_name):
+def check_E(job_file, group, number):
     """Check (JBI-W5).
 
-    For all jobs in folder MAIN:
-    The first program line (after initial
-    comments) as well as the final
-    program line should be CALL JOB:TRIGGER_RESET.
+    For all jobs in folder MAIN: The first program line (after initial
+    comments) as well as the final program line should be CALL JOB:TRIGGER_RESET.
 
     Parameters
     ----------
@@ -201,62 +182,51 @@ def check_E(job_file, group, number, file_name):
         Group of the warning.
     number : int
         Number of the warning.
-    file_name : str
-        Name of the file.
     """
     firstline = None
     lastline = None
-    # List of the comment lines indexes
     comment_indexes = []
     is_foldername_main = False
 
     if job_file.foldername == "MAIN":
         is_foldername_main = True
-        # Create a list for the comment block indexes
         for index, item in enumerate(job_file.programlines):
-            if item.strip().startswith("'---"):
+            if item.strip().startswith("'"):
                 comment_indexes.append(index)
 
-        """firstline saver:
-        If the line after initial comment
-        block contains a single line comment, skip this
-        line and save the firstline."""
+        # firstline saver: If the line after initial comment
+        # block contains a single line comment, skip this line and save the firstline.
         if job_file.programlines[comment_indexes[1] + 1].strip().startswith("'"):
             firstline = job_file.programlines[comment_indexes[1] + 2].strip()
         else:
             firstline = job_file.programlines[comment_indexes[1] + 1].strip()
 
-        """lastline saver:
-        If the previous line from END command is an " ",
-        skip this line and save one before as lastline."""
-
+        # lastline saver: If the previous line from END command is an " ",
+        # skip this line and save one before as lastline.
         if (job_file.programlines[-2]).isspace():
             lastline = job_file.programlines[-3].strip()
         else:
             lastline = job_file.programlines[-2].strip()
 
-    # Check after having firstline, lastline and is_name_ok.
     if firstline == lastline == "CALL JOB:TRIGGER_RESET":
         pass
 
     else:
         if is_foldername_main is True:
             print(
-                f"{file_name} - {group}{number} - [2]: For all jobs in folder MAIN: The first program line (after initial comments) as well as the final program line should be CALL JOB:TRIGGER_RESET."
+                f"{job_file.file_name} - {group}{number} - [2]: For all jobs in folder MAIN: The first program line (after initial comments) as well as the final program line should be CALL JOB:TRIGGER_RESET."
             )
             job_file.error_flag = True
         else:
             pass
 
 
-def check_F(job_file, group, number, file_name):
+def check_F(job_file, group, number):
     """Check (JBI-W6).
 
-    ARCON and ARCOFF commands should be enclosed
-    in a call of CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"
-    immediately before the ARCON command and a
-    call to CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"
-    immediately after the ARCOFF command.
+    ARCON and ARCOFF commands should be enclosed in a call of 
+    CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN" immediately before the ARCON command and a 
+    call to CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS" immediately after the ARCOFF command.
 
     Parameters
     ----------
@@ -266,8 +236,6 @@ def check_F(job_file, group, number, file_name):
         Group of the warning.
     number : int
         Number of the warning.
-    file_name : str
-        Name of the file.
     """
     for i in range(len(job_file.programlines) - 1):
         current_line = job_file.programlines[i].strip()
@@ -279,7 +247,7 @@ def check_F(job_file, group, number, file_name):
             'CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"'
         ):
             print(
-                f'{file_name} - {group}{number} - [{i + len(job_file.headlines)+ 1}]: ARCON command should be enclosed in a call of CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN".'
+                f'{job_file.file_name} - {group}{number} - [{i + len(job_file.headlines)+ 1}]: ARCON command should be enclosed in a call of CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN".'
             )
             job_file.error_flag = True
             break
@@ -289,7 +257,7 @@ def check_F(job_file, group, number, file_name):
             'CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"'
         ):
             print(
-                f'{file_name} - {group}{number} - [{i + len(job_file.headlines)+ 1}]: ARCOFF commands should be enclosed in a call of CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS".'
+                f'{job_file.file_name} - {group}{number} - [{i + len(job_file.headlines)+ 1}]: ARCOFF commands should be enclosed in a call of CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS".'
             )
             job_file.error_flag = True
             break
@@ -310,22 +278,16 @@ class JobFile:
         self.programlines = []
         self.separator = None
         self.error_flag = False
-        #    self.LVARS = {}
 
         self.read_file()
         self.save_name()
         self.save_foldername()
-
-        # self.read_LVARS()
-        # self.print_LVARS()
 
         self.rule_list()
 
     def read_file(self):
         """Class method to read the file and print the content."""
         try:
-            # ignore is risky! Talk with Cagtay!
-            # with open(self.file_path, encoding='utf-8', errors ='ignore'
             with open(self.file_path, encoding=_encoding) as file:
                 self.lines = file.readlines()
 
@@ -354,28 +316,28 @@ class JobFile:
 
         for line in self.headlines:
             if line.startswith("///FOLDERNAME"):
-                # split the line with " " and take the second element from the list split ( 0 and 1)
+                # split the line with " " and take the second element from the
+                # list split ( 0 and 1)
                 self.foldername = line.split(" ", 1)[1].strip()
                 print("Foldername:", self.foldername)
                 return
 
-        # If the "FOLDERNAME" line is not found, set the folder name to NOFOLDERNAME
+
         self.foldername = "!!NOFOLDERNAME!!"
-        #print("Foldername:", self.foldername)
 
     def rule_list(self):
         """Contains the rules."""
         rules = [
-            Rule("JBI-W", 1, logic=check_A),  # finished
+            Rule("JBI-W", 1, logic=check_A),  # tested
             Rule("JBI-W", 2, logic=check_B),  # tested
-            Rule("JBI-W", 3, logic=check_C),  # finished
+            Rule("JBI-W", 3, logic=check_C),  # tested
             Rule("JBI-W", 4, logic=check_D),  # finished
             Rule("JBI-W", 5, logic=check_E),  # finished
             Rule("JBI-W", 6, logic=check_F),  # finished
         ]
 
         for rule in rules:
-            rule.apply_rule(self, rule.group, rule.number, self.file_name)
+            rule.apply_rule(self, rule.group, rule.number)
 
         if self.error_flag is False:
             print(f"{self.file_name} :##### NO ERROR #####")
@@ -409,8 +371,9 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Wrong input.")
         sys.exit(1)
-
-    inputs = sys.argv[1:]  # ignore the first one which is fileparser.py
+        
+    # ignore the first one which is fileparser.py
+    inputs = sys.argv[1:]  
 
     if len(inputs) > 1:
         input_files(inputs)
