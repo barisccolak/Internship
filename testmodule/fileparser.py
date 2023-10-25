@@ -266,6 +266,44 @@ class JobFile:
         self.save_name()
         self.save_foldername()
 
+        self.read_LVARS()
+
+
+    def read_LVARS(self):
+        start_parsing = False  # Flag to indicate when to start parsing LVARS section
+        parts = []
+        self.LVARS = {}
+        for line in self.headlines:
+            if line.startswith("///LVARS"):
+                start_parsing = True
+                continue
+
+            if start_parsing:
+                if line.startswith("/"):  # Stop when parameters ends
+                    start_parsing = False
+
+                parts = line.strip().split(" ")  # Split the line into parts
+
+            if len(parts) == 2:
+                # take
+                variable_name = parts[1].strip()
+                variable_type = parts[0][:2]
+                variable_number = parts[0][2:].strip()
+
+                # store
+                self.LVARS[variable_name] = (variable_type, variable_number)
+
+            if start_parsing and line.startswith("///LVARS"):
+                start_parsing = (
+                    False  # Stop parsing when another ///LVARS section is encountered
+                )
+
+    def print_LVARS(self):
+        print("LVARS Dictionary:")
+        for variable, (var_type, var_number) in self.LVARS.items():
+            print(f"{variable}: ({var_type}, {var_number})")
+
+
     def read_file(self):
         """Class method to read the file and print the content."""
         try:
