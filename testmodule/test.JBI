@@ -1,0 +1,70 @@
+/JOB
+//NAME SET_IDS_FULL
+///FOLDERNAME TWINCAT_KOMMUNIKATION
+//POS
+///NPOS 0,0,0,0,0,0
+//ALIAS
+///LVARS 0,5,0,0,0,0,0,0
+LI000 WID
+LI001 NAHT
+LI002 LAGE
+LI003 RAUPE
+LI004 SCHW
+//ARGINFO
+///ARGTYPE I,I,I,I,I,,,
+///COMMENT
+WID
+NAHT
+LAGE
+RAUPE
+SCHW
+
+
+
+//INST
+///DATE 2023/05/03 17:27
+///COMM SET WID AND NUMBERS
+///ATTR SC,RW
+///LVARS 0,5,0,0,0,0,0,0
+NOP
+'--------------------------------
+'Dieser Job setzt einen
+'vollstndigen Satz an ID-Nummern
+'mit WID
+'--------------------------------
+'Argumente lesen
+
+
+
+CALL JOB:TRIGGER_RESET
+GETARG WID IARG#(1)
+GETARG NAHT IARG#(2)
+GETARG LAGE IARG#(3)
+GETARG RAUPE IARG#(4)
+GETARG SCHW IARG#(5)
+'--------------------------------
+'ID Trigger festsetzen
+SETREG MREG#(69) 1
+'--------------------------------
+'WID setzen
+CALL JOB:SET_ID ARGFWID ARGF"WID"
+'--------------------------------
+'Nummern setzen
+CALL JOB:SET_IDS ARGFNAHT ARGFLAGE ARGFRAUPE ARGFSCHW
+'--------------------------------
+'ID Trigger freigeben
+SETREG MREG#(69) 0
+
+CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"
+
+##CALL JOB:SET_TCPON ARGF1
+TCPON TL#(1)
+
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"
+ARCON ASF#(SCHW_KENNLINIE)
+IMOV WELD_INKR V=V_WELD UF#(USERFRAME)
+ARCOF AEF#(SCHW_KENNLINIE)
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"
+
+CALL JOB:TRIGGER_RESET
+END

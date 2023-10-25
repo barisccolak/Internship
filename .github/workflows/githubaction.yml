@@ -1,0 +1,23 @@
+name: Run Fileparser over all the JOB Files
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  run_fileparser:
+    name: Run Fileparser on JOB Files
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.10.12
+
+    - name: Run Python script on JOB files
+      run: |
+        find . -name "*.JBI" -exec python testmodule/fileparser.py {} \;

@@ -1,84 +1,28 @@
-
-
-## Markdown links
-
-1. [Basic Syntax](https://www.markdownguide.org/basic-syntax/)
-2. [Advanced Syntax](https://daringfireball.net/projects/markdown/syntax)
-
-
-## Git Commands
-
-1. `git add . -n` : Shows the dry changes 
-2. `git add .` : Adds the changes
-3. `git commit -m "message"` : Commits
-4. `git <x> --help` : Documentation for x
-5. `git --help` : Documentation for Git
-6. `git push` : Pushes the commit
-7. `git checkout branch_name` : Changes the branch
-8. `git checkout -b branch_name` : Create and changes the branch
-9. `git push --set-upstream origin sidebranch` : Pushes and sets upstream for current branch
-10. `git status` : Shows the status
-11. `git checkout -b ＜new-branch＞` : Creates and changes to new branch
-
-
-## Conda Commands
-
-1. `conda create -n test-env <python=3.10 numpy pandas> -y` : Creates a test environment and installs the listed packages
-2. `conda activate test-env`: Activates test environment
-3. `conda list`: show all packages installed in the currently active environment
-3. `conda list pandas`: show all packages that contain the name `pandas` installed in the currently active environment
-3. `conda uninstall <package_name>`: uninstall a package from the envrionment
-3. `conda env remove -n <envrionment_name>`: remove a conda environment completely
-
-
-## Pip Commands
-
-1. `pip install pint` : Install a package from the internet (PyPi)
-1. `pip uninstall pint` : remove a package previously installed using `pip`
-1. `pip install -e .` : Installs the local folder as python package
-
-## Command Shell 
-
-1. `python`
-2. `ipython`
-2. `python -m ipykernel install --user --name test-env --display-name "test-env"`: register a conda environment as a jupyter kernel (you need this to make the environment selectable in Jupyter notebook)
-
-
-## Ruff Commands
-
-1. pip install ruff
-2. ruff check .
-3. ruff check --fix .
-4. git diff : Shows the differences.
-5. 
-
-***
-## quickstart 
-
-This version of Fileparser contains two functions: `write` and `read`. 
+## quickstart
+Fileparser package contains various rules to verify the a JBI data.
 
 ## user guide
 
 ### Installation
 
-Install using `pip` locally:
+Install the python package:
 
-    `pip install -e .`
-    `pip install lorem`
+    pip install testmodule
 
-### Writing a text file
+To check the rules for a single `.JBI` file:
 
-To generate a text using `testmodule.write`:
+    python fileparser.py <your-file>
 
-    `python -m testmodule.write`
+To check the rules for all files in a folder:
 
-Give a path to create `text.txt`
+    python fileparser.py <your-path>
+    
+## List of error codes
 
-### Reading a text file
-
-To read a text file use class method `testmodule.read`:
-
-    `python -m testmodule.read`
-
-Supply the path of the target file.
-
+- w1 : job should start with a comment line
+    directly after the NOP statement.
+- w2 : program command `SETREG MREG#` should only be allowed when the job is listed under `FOLDERNAME TWINCAT_KOMMUNIKATION`
+- w3 : if the job is in the folder `STANDARD` or `MAIN`, the line `SET USERFRAME n` must be present, where n is any numerical value. The command `SET USERFRAME` must be executed before the command `CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"` is called.
+- w4 : if a the `TCPON` command is called, the previous line must be a call to CALL `JOB:SET_TCPON` with the same argument number in both cases.
+- w5 : for all jobs in folder `MAIN`: The first program line (after initial comments) as well as the final program line should be `CALL JOB:TRIGGER_RESET`.
+- w6 : `ARCON` and `ARCOFF` commands should be enclosed in a call of `CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"` immediately before the `ARCON` command and a call to `CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"` immediately after the `ARCOFF` command.
