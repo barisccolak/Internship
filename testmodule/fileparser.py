@@ -247,6 +247,46 @@ def check_F(job_file, group, number):
         else:
             pass
 
+def check_G(job_file, group, number):############buggy, incomplete
+    """Check (JBI-W7).
+
+    If foldername is MAIN, the command CALL JOB:SET_IDS_FULL (with arguments) must be
+    present and called before CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"
+
+    Parameters
+    ----------
+    job_file : ojb:`jobFile`
+        Object of a jobFile class.
+    group : str
+        Group of the warning.
+    number : int
+        Number of the warning.
+    """
+    index_set = []
+    index_trigger = [] 
+    
+    if job_file.foldername == "MAIN":
+        index_set = [
+            (i, line.strip())
+            for i, line in enumerate(job_file.lines)
+            if line.startswith("CALL JOB:SET_IDS_FULL")
+        ]
+        index_trigger = [
+            (i, line.strip())
+            for i, line in enumerate(job_file.lines)
+            if line.startswith('CALL JOB:TRIGGER ARGF "PROGRAMM_EIN"')
+        ]
+
+    if index_set == index_trigger == 0:
+        pass
+    elif index_set == 0 and index_trigger != 0:
+        msg = 'CALL JOB:SET_IDS_FULL doesn\'t exist'
+        line = index_trigger[0][0] + 1
+        return ( group, number, lines, msg)
+    elif index_trigger[0][0] < index_set[0][0]:
+        msg = 'CALL JOB:SET_IDS_FULL must be called before CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"'
+        line = index_set[0][0] + 1
+        return (group, number, line, msg)
 
 
 
@@ -371,6 +411,7 @@ rules = [
     Rule("JBI-W", 4, logic=check_D),
     Rule("JBI-W", 5, logic=check_E),
     Rule("JBI-W", 6, logic=check_F),
+    Rule("JBI-W", 7, logic=check_G),
 ]
 
 if __name__ == "__main__":
