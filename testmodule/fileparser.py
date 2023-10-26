@@ -23,9 +23,6 @@ class Rule:
         job_file : ojb:`jobFile`
             Object of a jobFile class.
 
-        Returns
-        -------
-
         """
         return self.logic(job_file, self.group, self.number)
 
@@ -56,8 +53,6 @@ def check_A(job_file, group, number):
         return (group, number, line, msg)
 
 
-
-
 def check_B(job_file, group, number):
     """Check (JBI-W, 2).
 
@@ -77,7 +72,11 @@ def check_B(job_file, group, number):
         if line.startswith("SETREG MREG#"):
             if not job_file.foldername == "TWINCAT_KOMMUNIKATION":
                 job_file.error_flag = True
-                line = [(i,line.strip()) for i,line in enumerate(job.headlines) if not line.startswith("'")][2][0]+1
+                line = [
+                    (i, line.strip())
+                    for i, line in enumerate(job.headlines)
+                    if not line.startswith("'")
+                ][2][0] + 1
                 msg = 'The program command SETREG MREG# should only be allowed when the job is listed under FOLDERNAME TWINCAT_KOMMUNIKATION"'
                 return (group, number, line, msg)
 
@@ -249,6 +248,8 @@ def check_F(job_file, group, number):
             pass
 
 
+
+
 ##########################
 class JobFile:
     """Public class to define jobFile."""
@@ -373,8 +374,7 @@ rules = [
 ]
 
 if __name__ == "__main__":
-
-    file_path = "/mnt/scratch/bcolak/Internship/testmodule/"
+    file_path = "/mnt/scratch/bcolak/Internship/testmodule/CREATE_SHIFTED_UF.JBI"
     p = Path(file_path)
 
     files = []
