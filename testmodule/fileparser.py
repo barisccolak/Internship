@@ -77,8 +77,9 @@ def check_B(job_file, group, number):
         if line.startswith("SETREG MREG#"):
             if not job_file.foldername == "TWINCAT_KOMMUNIKATION":
                 job_file.error_flag = True
+                line = [(i,line.strip()) for i,line in enumerate(job.headlines) if not line.startswith("'")][2][0]+1
                 msg = 'The program command SETREG MREG# should only be allowed when the job is listed under FOLDERNAME TWINCAT_KOMMUNIKATION"'
-                return (group, number, 3, msg)
+                return (group, number, line, msg)
 
 
 def check_C(job_file, group, number):
