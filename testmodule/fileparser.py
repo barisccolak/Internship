@@ -246,7 +246,7 @@ def check_F(job_file, group, number):
 
         else:
             pass
-
+######question: Does CALL JOB:SET_IDS_FULL always have to exist?
 def check_G(job_file, group, number):############buggy, incomplete
     """Check (JBI-W7).
 
@@ -261,6 +261,11 @@ def check_G(job_file, group, number):############buggy, incomplete
         Group of the warning.
     number : int
         Number of the warning.
+    
+    Returns
+    -------
+    warnings : array
+        Error messages.
     """
     index_set = []
     index_trigger = [] 
@@ -276,14 +281,16 @@ def check_G(job_file, group, number):############buggy, incomplete
             for i, line in enumerate(job_file.lines)
             if line.startswith('CALL JOB:TRIGGER ARGF "PROGRAMM_EIN"')
         ]
-
-    if index_set == index_trigger == 0:
+    #if lists are empty: pass
+    if not index_set and not index_trigger:
         pass
-    elif index_set == 0 and index_trigger != 0:
+    elif index_set and not index_trigger:
+        pass
+    elif not index_set and index_trigger:
         msg = 'CALL JOB:SET_IDS_FULL doesn\'t exist'
         line = index_trigger[0][0] + 1
-        return ( group, number, lines, msg)
-    elif index_trigger[0][0] < index_set[0][0]:
+        return (group, number, line, msg)
+    elif index_set and index_trigger and index_set[0][0] < index_trigger[0][0]:
         msg = 'CALL JOB:SET_IDS_FULL must be called before CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"'
         line = index_set[0][0] + 1
         return (group, number, line, msg)
