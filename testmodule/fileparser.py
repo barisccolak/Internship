@@ -290,23 +290,26 @@ def check_G(job_file, group, number):
 
     Returns
     -------
-    warnings : array
+    warnings : tuple
         Error messages.
     """
     index_set = []
     index_trigger = []
+    set_string = 'CALL JOB:SET_IDS_FULL'
+    trigger_string = 'CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"'
 
     if job_file.foldername == "MAIN":
         index_set = [
             (i, line.strip())
             for i, line in enumerate(job_file.lines)
-            if line.startswith("CALL JOB:SET_IDS_FULL")
+            if line.startswith(set_string)
         ]
         index_trigger = [
             (i, line.strip())
             for i, line in enumerate(job_file.lines)
-            if line.startswith('CALL JOB:TRIGGER ARGF "PROGRAMM_EIN"')
+            if line.startswith(trigger_string)
         ]
+
     if not index_set and not index_trigger:
         msg = "CALL JOB:SET_IDS_FULL does not exist."
         return (group, number, None, msg)
@@ -317,7 +320,7 @@ def check_G(job_file, group, number):
         line = index_trigger[0][0] + 1
         return (group, number, line, msg)
     elif index_set and index_trigger and index_set[0][0] > index_trigger[0][0]:
-        msg = 'CALL JOB:SET_IDS_FULL must be called before CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"'
+        msg = set_string + ' must be called before ' + trigger_string
         line = index_set[0][0] + 1
         return (group, number, line, msg)
 
