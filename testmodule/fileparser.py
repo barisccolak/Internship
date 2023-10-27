@@ -43,7 +43,7 @@ def check_A(job_file, group, number):
 
     Returns
     -------
-    warnings : array
+    warnings : tuple
         Error messages.
     """
     if not job_file.programlines[1].startswith("'"):
@@ -70,7 +70,7 @@ def check_B(job_file, group, number):
 
     Returns
     -------
-    warnings : array
+    warnings : tuple
         Error messages.
     """
     for line in job_file.programlines:
@@ -104,7 +104,7 @@ def check_C(job_file, group, number):
 
     Returns
     -------
-    warnings : array
+    warnings : tuple
         Error messages.
     """
     set_flag_username = False
@@ -157,7 +157,7 @@ def check_D(job_file, group, number):
 
     Returns
     -------
-    warnings : array
+    warnings : tuple
         Error messages.
     """
     argument = None
@@ -207,7 +207,7 @@ def check_E(job_file, group, number):
 
     Returns
     -------
-    warnings : array
+    warnings : tuple
         Error messages.
     """
     if job_file.foldername == "MAIN":
@@ -243,7 +243,7 @@ def check_F(job_file, group, number):
 
     Returns
     -------
-    warnings : array
+    warnings : tuple
         Error messages.
     """
     for i in range(len(job_file.programlines) - 1):
