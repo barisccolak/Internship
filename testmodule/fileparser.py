@@ -67,6 +67,11 @@ def check_B(job_file, group, number):
         Group of the warning.
     number : int
         Number of the warning.
+
+    Returns
+    -------
+    warnings : array
+        Error messages.
     """
     for line in job_file.programlines:
         if line.startswith("SETREG MREG#"):
@@ -96,6 +101,11 @@ def check_C(job_file, group, number):
         Group of the warning.
     number : int
         Number of the warning.
+
+    Returns
+    -------
+    warnings : array
+        Error messages.
     """
     set_flag_username = False
     set_flag_trigger = False
@@ -144,6 +154,11 @@ def check_D(job_file, group, number):
         Group of the warning.
     number : int
         Number of the warning.
+
+    Returns
+    -------
+    warnings : array
+        Error messages.
     """
     argument = None
     index_tcpon = 0
@@ -189,6 +204,11 @@ def check_E(job_file, group, number):
         Group of the warning.
     number : int
         Number of the warning.
+
+    Returns
+    -------
+    warnings : array
+        Error messages.
     """
     if job_file.foldername == "MAIN":
         command_indexes = [
@@ -220,6 +240,11 @@ def check_F(job_file, group, number):
         Group of the warning.
     number : int
         Number of the warning.
+
+    Returns
+    -------
+    warnings : array
+        Error messages.
     """
     for i in range(len(job_file.programlines) - 1):
         current_line = job_file.programlines[i].strip()
@@ -246,8 +271,9 @@ def check_F(job_file, group, number):
 
         else:
             pass
-######question: Does CALL JOB:SET_IDS_FULL always have to exist?
-def check_G(job_file, group, number):############buggy, incomplete
+
+
+def check_G(job_file, group, number):
     """Check (JBI-W7).
 
     If foldername is MAIN, the command CALL JOB:SET_IDS_FULL (with arguments) must be
@@ -261,15 +287,15 @@ def check_G(job_file, group, number):############buggy, incomplete
         Group of the warning.
     number : int
         Number of the warning.
-    
+
     Returns
     -------
     warnings : array
         Error messages.
     """
     index_set = []
-    index_trigger = [] 
-    
+    index_trigger = []
+
     if job_file.foldername == "MAIN":
         index_set = [
             (i, line.strip())
@@ -281,20 +307,19 @@ def check_G(job_file, group, number):############buggy, incomplete
             for i, line in enumerate(job_file.lines)
             if line.startswith('CALL JOB:TRIGGER ARGF "PROGRAMM_EIN"')
         ]
-    #if lists are empty: pass
     if not index_set and not index_trigger:
-        pass
+        msg = "CALL JOB:SET_IDS_FULL does not exist."
+        return (group, number, None, msg)
     elif index_set and not index_trigger:
         pass
     elif not index_set and index_trigger:
-        msg = 'CALL JOB:SET_IDS_FULL doesn\'t exist'
+        msg = "CALL JOB:SET_IDS_FULL doesn't exist"
         line = index_trigger[0][0] + 1
         return (group, number, line, msg)
-    elif index_set and index_trigger and index_set[0][0] < index_trigger[0][0]:
+    elif index_set and index_trigger and index_set[0][0] > index_trigger[0][0]:
         msg = 'CALL JOB:SET_IDS_FULL must be called before CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"'
         line = index_set[0][0] + 1
         return (group, number, line, msg)
-
 
 
 ##########################
@@ -319,6 +344,9 @@ class JobFile:
         self.save_foldername()
 
         self.read_LVARS()
+
+        self.command_lines = []
+        self.comment_lines = []
 
     def read_LVARS(self):
         """Create a dictionary with the local variables."""
@@ -355,6 +383,18 @@ class JobFile:
         try:
             with open(self.file_path, encoding=_encoding) as file:
                 self.lines = file.readlines()
+
+                self.comment_lines = [
+                    (i, line.strip())
+                    for i, line in enumerate(self.lines)
+                    if line.startswith("'")
+                ]
+
+                self.command_lines = [
+                    (i, line.strip())
+                    for i, line in enumerate(self.lines)
+                    if not line.startswith("'")
+                ]
 
                 for i, line in enumerate(self.lines):
                     if line.startswith("NOP"):
