@@ -248,7 +248,7 @@ def check_F(job_file, group, number):
             pass
 
 
-def check_H(job_file, group, number):###incomplete
+def check_H(job_file, group, number):###logic is working but returning multiple errors are problematic.
     """Check (JBI-W8).
 
     Trigger pairs (ON / OFF) must always be present in "closed" pairs.
