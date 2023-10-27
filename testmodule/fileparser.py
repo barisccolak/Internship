@@ -292,8 +292,8 @@ def check_H(job_file, group, number):###logic is working but returning multiple 
         errors.append(f'Unclosed trigger pair: {unclosed_trigger}')
     
     if errors:
-        print(errors)
-        #return [(group, number, None, msg) for msg in errors]
+        
+        return [(group, number, None, msg) for msg in errors]
 
 
 
@@ -442,8 +442,15 @@ def check_jobfile(file_path):
     for file in files:
         job_file = JobFile(file)
         for rule in rules:
-            result = rule.apply_rule(job_file)
-            if result is not None:
+            results = rule.apply_rule(job_file)
+
+            if results is None:
+                continue
+            
+            if isinstance(results, tuple):
+                results = [results]
+
+            for result in results:
                 warning = (
                     result[0]
                     + str(result[1])
