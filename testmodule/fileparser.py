@@ -248,6 +248,52 @@ def check_F(job_file, group, number):
             pass
 
 
+def check_H(job_file, group, number):
+    """Check (JBI-W8).
+
+    Trigger pairs (ON / OFF) must always be present in "closed" pairs.
+
+    Parameters
+    ----------
+    job_file : ojb:`jobFile`
+        Object of a jobFile class.
+    group : str
+        Group of the warning.
+    number : int
+        Number of the warning.
+
+    Returns
+    -------
+    warnings : array
+        Error messages.
+    """
+    
+    errors = []
+    stack = [] 
+    
+    trigger_pairs = [
+        ('CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"', 'CALL JOB:TRIGGER ARGF"PROGRAMM_AUS"'),
+        ('CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"', 'CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"'),
+        ('CALL JOB:TRIGGER ARGF"UI_START"', 'CALL JOB:TRIGGER ARGF"UI_STOP"'),
+        ('CALL JOB:TRIGGER ARGF"TRIG_EIN"', 'CALL JOB:TRIGGER ARGF"TRIG_AUS"'),
+    ]
+    
+    for line in job.programlines:
+        for start_trigger, end_trigger in trigger_pairs:
+            if start_trigger in line:
+                stack.append(start_trigger)
+            if end_trigger in line:
+                if not stack:
+                    errors.append(f'Unclosed trigger pair: {end_trigger}')
+                else:
+                    stack.pop()
+    
+    for unclosed_trigger in stack:
+        errors.append(f'Unclosed trigger pair: {unclosed_trigger}')
+    
+    if errors:
+        return [(group, number, None, msg) for msg in errors]
+
 
 
 ##########################
@@ -371,6 +417,7 @@ rules = [
     Rule("JBI-W", 4, logic=check_D),
     Rule("JBI-W", 5, logic=check_E),
     Rule("JBI-W", 6, logic=check_F),
+    Rule("JBI-W", 8, logic=check_H),
 ]
 
 if __name__ == "__main__":
