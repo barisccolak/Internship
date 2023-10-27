@@ -248,14 +248,14 @@ def check_F(job_file, group, number):
             pass
 
 
-def check_H(job_file, group, number):
+def check_H(job_file, group, number):###incomplete
     """Check (JBI-W8).
 
     Trigger pairs (ON / OFF) must always be present in "closed" pairs.
 
     Parameters
     ----------
-    job_file : ojb:`jobFile`
+    job_file : obj:`jobFile`
         Object of a jobFile class.
     group : str
         Group of the warning.
@@ -278,7 +278,7 @@ def check_H(job_file, group, number):
         ('CALL JOB:TRIGGER ARGF"TRIG_EIN"', 'CALL JOB:TRIGGER ARGF"TRIG_AUS"'),
     ]
     
-    for line in job.programlines:
+    for line in job_file.programlines:
         for start_trigger, end_trigger in trigger_pairs:
             if start_trigger in line:
                 stack.append(start_trigger)
@@ -292,7 +292,8 @@ def check_H(job_file, group, number):
         errors.append(f'Unclosed trigger pair: {unclosed_trigger}')
     
     if errors:
-        return [(group, number, None, msg) for msg in errors]
+        print(errors)
+        #return [(group, number, None, msg) for msg in errors]
 
 
 
@@ -420,8 +421,8 @@ rules = [
     Rule("JBI-W", 8, logic=check_H),
 ]
 
-if __name__ == "__main__":
-    file_path = "/mnt/scratch/bcolak/Internship/testmodule/CREATE_SHIFTED_UF.JBI"
+
+def check_jobfile(file_path):
     p = Path(file_path)
 
     files = []
@@ -439,9 +440,9 @@ if __name__ == "__main__":
         print(e)
 
     for file in files:
-        job = JobFile(file)
+        job_file = JobFile(file)
         for rule in rules:
-            result = rule.apply_rule(job)
+            result = rule.apply_rule(job_file)
             if result is not None:
                 warning = (
                     result[0]
@@ -452,3 +453,8 @@ if __name__ == "__main__":
                     + result[3]
                 )
                 print(warning)
+
+
+if __name__ == "__main__":
+    file_path = "/mnt/scratch/bcolak/Internship/testmodule/CREATE_SHIFTED_UF.JBI"
+    check_jobfile(file_path)
