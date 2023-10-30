@@ -49,7 +49,7 @@ def check_A(job_file, group, number):
     if not job_file.programlines[1].startswith("'"):
         job_file.error_flag = True
         line = job_file.separator + 2
-        msg = "Every program should start with a comment line directly after the NOP statement."
+        msg = "Every program should start with a comment line directly after the NOP statement"
         return (group, number, line, msg)
 
 
@@ -74,7 +74,7 @@ def check_B(job_file, group, number):
                 job_file.error_flag = True
                 line = [
                     (i, line.strip())
-                    for i, line in enumerate(job.headlines)
+                    for i, line in enumerate(job_file.headlines)
                     if not line.startswith("'")
                 ][2][0] + 1
                 msg = 'The program command SETREG MREG# should only be allowed when the job is listed under FOLDERNAME TWINCAT_KOMMUNIKATION"'
@@ -168,7 +168,7 @@ def check_D(job_file, group, number):
 
     if (argument != tcp_call_arg) or (argument == tcp_call_arg is None):
         line = index_tcpon + len(job_file.headlines)
-        msg = " When a the TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases."
+        msg = " When a the TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases"
 
         job_file.error_flag = True
 
@@ -201,7 +201,7 @@ def check_E(job_file, group, number):
             == command_indexes[-2][1]
             == "CALL JOB:TRIGGER_RESET"
         ):
-            msg = "For all jobs in folder MAIN: The first program line (after initial comments) as well as the final program line should be CALL JOB:TRIGGER_RESET."
+            msg = "For all jobs in folder MAIN: The first program line (after initial comments) as well as the final program line should be CALL JOB:TRIGGER_RESET"
             return (group, number, None, msg)
 
 
