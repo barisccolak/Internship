@@ -298,31 +298,32 @@ def check_G(job_file, group, number):
     set_string = 'CALL JOB:SET_IDS_FULL'
     trigger_string = 'CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"'
 
-    if job_file.foldername == "MAIN":
-        index_set = [
-            (i, line.strip())
-            for i, line in enumerate(job_file.lines)
-            if line.startswith(set_string)
-        ]
-        index_trigger = [
-            (i, line.strip())
-            for i, line in enumerate(job_file.lines)
-            if line.startswith(trigger_string)
-        ]
+    if job_file.foldername != "MAIN":
+        return
 
+    for (line_number, line) in job_file.command_lines:
+        if line.startswith(set_string):
+            index_set.append(line_number)
+            print("Set ",line_number)
+        elif line.startswith(trigger_string):
+            index_trigger.append(line_number)
+            print("Trigger ",line_number)
+    
+    
     if not index_set and not index_trigger:
-        msg = "CALL JOB:SET_IDS_FULL does not exist."
+        msg = set_string +" does not exist."
         return (group, number, None, msg)
     elif index_set and not index_trigger:
         pass
     elif not index_set and index_trigger:
         msg = "CALL JOB:SET_IDS_FULL doesn't exist"
-        line = index_trigger[0][0] + 1
+        line = index_trigger[0] + 1
         return (group, number, line, msg)
-    elif index_set and index_trigger and index_set[0][0] > index_trigger[0][0]:
+    elif (index_set and index_trigger) and (index_set[0] > index_trigger[0]):
         msg = set_string + ' must be called before ' + trigger_string
-        line = index_set[0][0] + 1
+        line = index_set[0] + 1
         return (group, number, line, msg)
+
 
 
 ##########################
@@ -347,9 +348,6 @@ class JobFile:
         self.save_foldername()
 
         self.read_LVARS()
-
-        self.command_lines = []
-        self.comment_lines = []
 
     def read_LVARS(self):
         """Create a dictionary with the local variables."""
@@ -465,7 +463,7 @@ rules = [
 ]
 
 if __name__ == "__main__":
-    file_path = "/mnt/scratch/bcolak/Internship/testmodule/CREATE_SHIFTED_UF.JBI"
+    file_path = "/mnt/scratch/bcolak/Internship/testmodule/MAIN_LINEAR.JBI"
     p = Path(file_path)
 
     files = []
