@@ -43,7 +43,7 @@ def check_A(job_file, group, number):
 
     Returns
     -------
-    warnings : array
+    warnings : tuple
         Error messages.
     """
     if not job_file.programlines[1].startswith("'"):
@@ -67,6 +67,11 @@ def check_B(job_file, group, number):
         Group of the warning.
     number : int
         Number of the warning.
+
+    Returns
+    -------
+    warnings : tuple
+        Error messages.
     """
     for line in job_file.programlines:
         if line.startswith("SETREG MREG#"):
@@ -96,6 +101,11 @@ def check_C(job_file, group, number):
         Group of the warning.
     number : int
         Number of the warning.
+
+    Returns
+    -------
+    warnings : tuple
+        Error messages.
     """
     set_flag_username = False
     set_flag_trigger = False
@@ -144,6 +154,11 @@ def check_D(job_file, group, number):
         Group of the warning.
     number : int
         Number of the warning.
+
+    Returns
+    -------
+    warnings : tuple
+        Error messages.
     """
     argument = None
     index_tcpon = 0
@@ -189,6 +204,11 @@ def check_E(job_file, group, number):
         Group of the warning.
     number : int
         Number of the warning.
+
+    Returns
+    -------
+    warnings : tuple
+        Error messages.
     """
     if job_file.foldername == "MAIN":
         command_indexes = [
@@ -220,6 +240,11 @@ def check_F(job_file, group, number):
         Group of the warning.
     number : int
         Number of the warning.
+
+    Returns
+    -------
+    warnings : tuple
+        Error messages.
     """
     for i in range(len(job_file.programlines) - 1):
         current_line = job_file.programlines[i].strip()
@@ -247,6 +272,57 @@ def check_F(job_file, group, number):
         else:
             pass
 
+
+def check_G(job_file, group, number):
+    """Check (JBI-W7).
+
+    If foldername is MAIN, the command CALL JOB:SET_IDS_FULL (with arguments) must be
+    present and called before CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"
+
+    Parameters
+    ----------
+    job_file : ojb:`jobFile`
+        Object of a jobFile class.
+    group : str
+        Group of the warning.
+    number : int
+        Number of the warning.
+
+    Returns
+    -------
+    warnings : tuple
+        Error messages.
+    """
+    index_set = []
+    index_trigger = []
+    set_string = 'CALL JOB:SET_IDS_FULL'
+    trigger_string = 'CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"'
+
+    if job_file.foldername != "MAIN":
+        return
+
+    for (line_number, line) in job_file.command_lines:
+        if line.startswith(set_string):
+            index_set.append(line_number)
+            print("Set ",line_number)
+        elif line.startswith(trigger_string):
+            index_trigger.append(line_number)
+            print("Trigger ",line_number)
+    
+    
+    if not index_set and not index_trigger:
+        msg = set_string +" does not exist."
+        return (group, number, None, msg)
+    elif index_set and not index_trigger:
+        pass
+    elif not index_set and index_trigger:
+        msg = "CALL JOB:SET_IDS_FULL doesn't exist"
+        line = index_trigger[0] + 1
+        return (group, number, line, msg)
+    elif (index_set and index_trigger) and (index_set[0] > index_trigger[0]):
+        msg = set_string + ' must be called before ' + trigger_string
+        line = index_set[0] + 1
+        return (group, number, line, msg)
 
 
 
@@ -308,6 +384,18 @@ class JobFile:
         try:
             with open(self.file_path, encoding=_encoding) as file:
                 self.lines = file.readlines()
+
+                self.comment_lines = [
+                    (i, line.strip())
+                    for i, line in enumerate(self.lines)
+                    if line.startswith("'")
+                ]
+
+                self.command_lines = [
+                    (i, line.strip())
+                    for i, line in enumerate(self.lines)
+                    if not line.startswith("'")
+                ]
 
                 for i, line in enumerate(self.lines):
                     if line.startswith("NOP"):
@@ -371,10 +459,11 @@ rules = [
     Rule("JBI-W", 4, logic=check_D),
     Rule("JBI-W", 5, logic=check_E),
     Rule("JBI-W", 6, logic=check_F),
+    Rule("JBI-W", 7, logic=check_G),
 ]
 
 if __name__ == "__main__":
-    file_path = "/mnt/scratch/bcolak/Internship/testmodule/CREATE_SHIFTED_UF.JBI"
+    file_path = "/mnt/scratch/bcolak/Internship/testmodule/MAIN_LINEAR.JBI"
     p = Path(file_path)
 
     files = []
