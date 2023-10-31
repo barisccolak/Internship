@@ -78,6 +78,6 @@ def test_check_C_error_3():
     assert result[0] == "W"
     assert result[1] == "3"
     assert result[2] == 7
-    assert result[3] == "The command SET USERFRAME does not exist"
+    assert result[3] == "The command SET USERFRAME must be executed before the command CALL JOB:TRIGGER ARGF PROGRAMM_EIN is called"
 
 
