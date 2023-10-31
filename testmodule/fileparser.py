@@ -325,7 +325,7 @@ def check_G(job_file, group, number):
         return (group, number, line, msg)
 
 
-def check_H(job_file, group, number):
+def check_H(job_file, group, number):#########indexing error
     """Check (JBI-W8).
     
     Trigger pairs (ON / OFF) must always be present in "closed" pairs.
@@ -346,8 +346,7 @@ def check_H(job_file, group, number):
     """
     
     errors = []
-    stack = [] 
-
+    error_lines = []
     
     trigger_pairs = [
         ('CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"', 'CALL JOB:TRIGGER ARGF"PROGRAMM_AUS"'),
@@ -356,24 +355,27 @@ def check_H(job_file, group, number):
         ('CALL JOB:TRIGGER ARGF"TRIG_EIN"', 'CALL JOB:TRIGGER ARGF"TRIG_AUS"'),
     ]
 
-    error_line = 0
-    
-    for line_number, line_content in job_file.command_lines:
-        for start_trigger, end_trigger in trigger_pairs:
+     
+
+    for start_trigger, end_trigger in trigger_pairs:
+        stack = []
+ 
+        for line_number, line_content in job_file.command_lines:    
             if start_trigger in line_content:
                 stack.append((start_trigger, line_number))
             if end_trigger in line_content:
                 if not stack:
-                    errors.append(f'Unclosed trigger pair: {(end_trigger)}')
+                    errors.append(f'Unopened trigger pair: {(end_trigger)}')
+                    error_lines.append(line_number)
                 else:
                     stack.pop()
     
-    for unclosed_trigger in stack:
-        error_line = unclosed_trigger[1]
-        errors.append(f'Unclosed trigger pair: {(unclosed_trigger[0])}')
-    
+        for unclosed_trigger in stack:
+            error_lines.append(unclosed_trigger[1])
+            errors.append(f'Unclosed trigger pair: {(unclosed_trigger[0])}')
+
     if errors:
-        return [(group, number, error_line + 1 , msg) for msg in errors]
+        return [(group, number, line + 1, msg) for msg,line in zip(errors, error_lines, strict = True)]
 
 ##########################
 class JobFile:
