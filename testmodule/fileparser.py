@@ -1,5 +1,6 @@
 """Fileparser recieves JBI data and tests their suitability."""
 
+from __future__ import annotations
 
 import os
 from pathlib import Path
@@ -10,12 +11,12 @@ _encoding = "cp1252"  # default yaskawa file encoding
 class Rule:
     """It defines the class Rule."""
 
-    def __init__(self, group, number, logic):
+    def __init__(self, group: str, number: int, logic: Callable):
         self.group = group
         self.number = number
         self.logic = logic
 
-    def apply_rule(self, job_file):
+    def apply_rule(self, job_file: JobFile):
         """Recieve rule and choose logic.
 
         Parameters
@@ -27,7 +28,7 @@ class Rule:
         return self.logic(job_file, self.group, self.number)
 
 
-def check_A(job_file, group, number):
+def check_A(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
     """Check (JBI-W, 1).
 
     Check if program starts with a comment line directly after the NOP statement.
@@ -53,7 +54,7 @@ def check_A(job_file, group, number):
         return (group, number, line, msg)
 
 
-def check_B(job_file, group, number):
+def check_B(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
     """Check (JBI-W, 2).
 
     Test the job if program command SETREG MREG# is listed
@@ -86,7 +87,7 @@ def check_B(job_file, group, number):
                 return (group, number, line, msg)
 
 
-def check_C(job_file, group, number):
+def check_C(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
     """Check (JBI-W3).
 
     If the job is in the folder STANDARD or MAIN, the line SET USERFRAME n
@@ -140,7 +141,7 @@ def check_C(job_file, group, number):
             return (group, number, line, msg)
 
 
-def check_D(job_file, group, number):
+def check_D(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
     """Check (JBI-W4).
 
     When a the TCPON command is called, the previous line must be a call to
@@ -190,7 +191,7 @@ def check_D(job_file, group, number):
         return (group, number, line, msg)
 
 
-def check_E(job_file, group, number):
+def check_E(job_file: JobFile, group: str, number: int) -> list[tuple[str, int, int, str]]:
     """Check (JBI-W5).
 
     For all jobs in folder MAIN: The first program line (after initial
@@ -225,7 +226,7 @@ def check_E(job_file, group, number):
             return (group, number, None, msg)
 
 
-def check_F(job_file, group, number):
+def check_F(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
     """Check (JBI-W6).
 
     ARCON and ARCOFF commands should be enclosed in a call of
@@ -273,7 +274,7 @@ def check_F(job_file, group, number):
             pass
 
 
-def check_G(job_file, group, number):
+def check_G(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
     """Check (JBI-W7).
 
     If foldername is MAIN, the command CALL JOB:SET_IDS_FULL (with arguments) must be
@@ -324,7 +325,7 @@ def check_G(job_file, group, number):
         return (group, number, line, msg)
 
 
-def check_H(job_file, group, number):
+def check_H(job_file: JobFile, group: str, number: int) -> [tuple[str, int, int, str]]:
     """Check (JBI-W8).
 
     Trigger pairs (ON / OFF) must always be present in "closed" pairs.
@@ -384,7 +385,7 @@ def check_H(job_file, group, number):
 class JobFile:
     """Public class to define jobFile."""
 
-    def __init__(self, file_path):
+    def __init__(self, file_path: str):
         """Initialize."""
         self.file_path = file_path
         self.file_name = os.path.basename(file_path)
@@ -484,7 +485,7 @@ class JobFile:
 
 
 ##########################
-def input_file(file_path):
+def input_file(file_path: str):
     """Recieve single input file."""
     job = JobFile(file_path)
 
@@ -497,7 +498,7 @@ def input_file(file_path):
             print(warning)
 
 
-def input_folder(file_path):
+def input_folder(file_path: str):
     """Recieve single input folder."""
     for root, dirs, files in os.walk(file_path):
         for file in sorted(files):
@@ -518,7 +519,7 @@ rules = [
 ]
 
 
-def check_jobfile(file_path):
+def check_jobfile(file_path: str):
     """Run the rules in a folder or in a file."""
     p = Path(file_path)
 
