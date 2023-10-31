@@ -325,11 +325,11 @@ def check_G(job_file, group, number):
         return (group, number, line, msg)
 
 
- def check_H(job_file, group, number):###logic is working but returning multiple errors are problematic.
+def check_H(job_file, group, number):
     """Check (JBI-W8).
-
+    
     Trigger pairs (ON / OFF) must always be present in "closed" pairs.
-
+    
     Parameters
     ----------
     job_file : obj:`jobFile`
@@ -338,7 +338,7 @@ def check_G(job_file, group, number):
         Group of the warning.
     number : int
         Number of the warning.
-
+    
     Returns
     -------
     warnings : array
@@ -347,6 +347,7 @@ def check_G(job_file, group, number):
     
     errors = []
     stack = [] 
+
     
     trigger_pairs = [
         ('CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"', 'CALL JOB:TRIGGER ARGF"PROGRAMM_AUS"'),
@@ -354,23 +355,25 @@ def check_G(job_file, group, number):
         ('CALL JOB:TRIGGER ARGF"UI_START"', 'CALL JOB:TRIGGER ARGF"UI_STOP"'),
         ('CALL JOB:TRIGGER ARGF"TRIG_EIN"', 'CALL JOB:TRIGGER ARGF"TRIG_AUS"'),
     ]
+
+    error_line = 0
     
-    for line in job_file.programlines:
+    for line_number, line_content in job_file.command_lines:
         for start_trigger, end_trigger in trigger_pairs:
-            if start_trigger in line:
-                stack.append(start_trigger)
-            if end_trigger in line:
+            if start_trigger in line_content:
+                stack.append((start_trigger, line_number))
+            if end_trigger in line_content:
                 if not stack:
-                    errors.append(f'Unclosed trigger pair: {end_trigger}')
+                    errors.append(f'Unclosed trigger pair: {(end_trigger)}')
                 else:
                     stack.pop()
     
     for unclosed_trigger in stack:
-        errors.append(f'Unclosed trigger pair: {unclosed_trigger}')
+        error_line = unclosed_trigger[1]
+        errors.append(f'Unclosed trigger pair: {(unclosed_trigger[0])}')
     
     if errors:
-        return [(group, number, None, msg) for msg in errors]
-
+        return [(group, number, error_line + 1 , msg) for msg in errors]
 
 ##########################
 class JobFile:
@@ -551,5 +554,5 @@ def check_jobfile(file_path):
 
 
 if __name__ == "__main__":
-    file_path = "/mnt/scratch/bcolak/Internship/testmodule/MAIN_LINEAR.JBI"
+    file_path = "/mnt/scratch/bcolak/Internship/testmodule/test.JBI"
     check_jobfile(file_path)
