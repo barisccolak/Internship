@@ -295,23 +295,22 @@ def check_G(job_file, group, number):
     """
     index_set = []
     index_trigger = []
-    set_string = 'CALL JOB:SET_IDS_FULL'
+    set_string = "CALL JOB:SET_IDS_FULL"
     trigger_string = 'CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"'
 
     if job_file.foldername != "MAIN":
         return
 
-    for (line_number, line) in job_file.command_lines:
+    for line_number, line in job_file.command_lines:
         if line.startswith(set_string):
             index_set.append(line_number)
-            print("Set ",line_number)
+            print("Set ", line_number)
         elif line.startswith(trigger_string):
             index_trigger.append(line_number)
-            print("Trigger ",line_number)
-    
-    
+            print("Trigger ", line_number)
+
     if not index_set and not index_trigger:
-        msg = set_string +" does not exist."
+        msg = set_string + " does not exist."
         return (group, number, None, msg)
     elif index_set and not index_trigger:
         pass
@@ -320,10 +319,65 @@ def check_G(job_file, group, number):
         line = index_trigger[0] + 1
         return (group, number, line, msg)
     elif (index_set and index_trigger) and (index_set[0] > index_trigger[0]):
-        msg = set_string + ' must be called before ' + trigger_string
+        msg = set_string + " must be called before " + trigger_string
         line = index_set[0] + 1
         return (group, number, line, msg)
 
+
+def check_H(job_file, group, number):
+    """Check (JBI-W8).
+
+    Trigger pairs (ON / OFF) must always be present in "closed" pairs.
+
+    Parameters
+    ----------
+    job_file : obj:`jobFile`
+        Object of a jobFile class.
+    group : str
+        Group of the warning.
+    number : int
+        Number of the warning.
+
+    Returns
+    -------
+    warnings : array
+        Error messages.
+    """
+    errors = []
+    error_lines = []
+
+    trigger_pairs = [
+        ('CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"', 'CALL JOB:TRIGGER ARGF"PROGRAMM_AUS"'),
+        (
+            'CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"',
+            'CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"',
+        ),
+        ('CALL JOB:TRIGGER ARGF"UI_START"', 'CALL JOB:TRIGGER ARGF"UI_STOP"'),
+        ('CALL JOB:TRIGGER ARGF"TRIG_EIN"', 'CALL JOB:TRIGGER ARGF"TRIG_AUS"'),
+    ]
+
+    for start_trigger, end_trigger in trigger_pairs:
+        stack = []
+
+        for line_number, line_content in job_file.command_lines:
+            if start_trigger in line_content:
+                stack.append((start_trigger, line_number))
+            if end_trigger in line_content:
+                if not stack:
+                    errors.append(f"Unopened trigger pair: {(end_trigger)}")
+                    error_lines.append(line_number)
+                else:
+                    stack.pop()
+
+        for unclosed_trigger in stack:
+            error_lines.append(unclosed_trigger[1])
+            errors.append(f"Unclosed trigger pair: {(unclosed_trigger[0])}")
+
+    if errors:
+        return [
+            (group, number, line + 1, msg)
+            for msg, line in zip(errors, error_lines, strict=True)
+        ]
 
 
 ##########################
@@ -460,10 +514,12 @@ rules = [
     Rule("JBI-W", 5, logic=check_E),
     Rule("JBI-W", 6, logic=check_F),
     Rule("JBI-W", 7, logic=check_G),
+    Rule("JBI-W", 8, logic=check_H),
 ]
 
-if __name__ == "__main__":
-    file_path = "/mnt/scratch/bcolak/Internship/testmodule/MAIN_LINEAR.JBI"
+
+def check_jobfile(file_path):
+    """Run the rules in a folder or in a file."""
     p = Path(file_path)
 
     files = []
@@ -481,10 +537,17 @@ if __name__ == "__main__":
         print(e)
 
     for file in files:
-        job = JobFile(file)
+        job_file = JobFile(file)
         for rule in rules:
-            result = rule.apply_rule(job)
-            if result is not None:
+            results = rule.apply_rule(job_file)
+
+            if results is None:
+                continue
+
+            if isinstance(results, tuple):
+                results = [results]
+
+            for result in results:
                 warning = (
                     result[0]
                     + str(result[1])
@@ -494,3 +557,8 @@ if __name__ == "__main__":
                     + result[3]
                 )
                 print(warning)
+
+
+if __name__ == "__main__":
+    file_path = "/mnt/scratch/bcolak/Internship/testmodule/test.JBI"
+    check_jobfile(file_path)
