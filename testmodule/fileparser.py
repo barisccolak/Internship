@@ -11,7 +11,7 @@ _encoding = "cp1252"  # default yaskawa file encoding
 class Rule:
     """It defines the class Rule."""
 
-    def __init__(self, group: str, number: int, logic: Callable[[str], str]):
+    def __init__(self, group: str, number: int, logic: Callable):
         self.group = group
         self.number = number
         self.logic = logic
@@ -191,7 +191,7 @@ def check_D(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
         return (group, number, line, msg)
 
 
-def check_E(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
+def check_E(job_file: JobFile, group: str, number: int) -> list[tuple[str, int, int, str]]:
     """Check (JBI-W5).
 
     For all jobs in folder MAIN: The first program line (after initial
