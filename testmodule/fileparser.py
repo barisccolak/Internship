@@ -11,7 +11,7 @@ _encoding = "cp1252"  # default yaskawa file encoding
 class Rule:
     """It defines the class Rule."""
 
-    def __init__(self, group: str, number: int, logic: str):
+    def __init__(self, group: str, number: int, logic: Callable[[str], str]):
         self.group = group
         self.number = number
         self.logic = logic
@@ -325,7 +325,7 @@ def check_G(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
         return (group, number, line, msg)
 
 
-def check_H(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
+def check_H(job_file: JobFile, group: str, number: int) -> [tuple[str, int, int, str]]:
     """Check (JBI-W8).
 
     Trigger pairs (ON / OFF) must always be present in "closed" pairs.
