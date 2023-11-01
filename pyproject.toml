@@ -13,6 +13,12 @@ classifiers = [
     "Operating System :: OS Independent",
     ]
 
+[project.optional-dependencies]
+test = [
+    "pytest >=6",
+    "pytest-cov",
+]
+
 [tool.ruff]
 select = [
   "E",   # pycodestyle
@@ -24,5 +30,10 @@ select = [
 [tool.ruff.pydocstyle]
 convention = "numpy"
 
+# pytest configuration
 [tool.pytest.ini_options]
+addopts = "--tb=short --color=yes -rsw --cov=testmodule"
 testpaths = ["tests",]
+
+[tool.coverage.run]
+source = ["testmodule"]
