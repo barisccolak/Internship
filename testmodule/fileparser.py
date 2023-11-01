@@ -161,8 +161,15 @@ def check_D(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
     warnings : tuple
         Error messages.
     """
+    ################################################################NOT WORKING: MODIFIED TO ENHANCE MULTIPLE ERRORS IN THE FILE
+    #iterate once and look for tcpoon: extract the arg and look for one previous index with the right arg. Add warnings into list
+    #iterate again for calljob: extract argument and look for one next line with the right arg. Add warnings into list.
+    
+    errors = []
+    error_lines = []
+
     argument = None
-    index_tcpon = 0
+    index_tcpon = []
     is_tcpon = False
     tcp_call_arg = None
 
@@ -172,23 +179,25 @@ def check_D(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
             end_index = item.find(")", start_index)
 
             argument = item[start_index + 1 : end_index]
-            index_tcpon = index
+            index_tcpon.append(index)
             is_tcpon = True
-            break
+            print("INDEX_TCPON",index_tcpon[-1])
 
-    if is_tcpon:
-        if index_tcpon > 0 and job_file.programlines[index_tcpon - 1].startswith(
-            "CALL JOB:SET_TCPON ARGF"
-        ):
-            tcp_call_arg = job_file.programlines[index_tcpon - 1][23:].strip()
-
-    if (argument != tcp_call_arg) or (argument == tcp_call_arg is None):
-        line = index_tcpon + len(job_file.headlines)
-        msg = " When a the TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases"
-
-        job_file.error_flag = True
-
-        return (group, number, line, msg)
+        if is_tcpon:
+            if len(index_tcpon) > 0 and job_file.programlines[index_tcpon[-1] - 1].startswith(
+                "CALL JOB:SET_TCPON ARGF"
+            ):
+                tcp_call_arg = job_file.programlines[index_tcpon[-1] - 1][23:].strip()
+    
+        if (argument != tcp_call_arg) or (argument == tcp_call_arg is None):
+            line = index_tcpon[-1] + len(job_file.headlines)
+            msg = "When a TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases"
+            error_lines.append(line)
+            errors.append((group, number, line, msg))
+            job_file.error_flag = True
+        
+    print("error_lines",error_lines)
+    return errors
 
 
 def check_E(job_file: JobFile, group: str, number: int) -> list[tuple[str, int, int, str]]:
