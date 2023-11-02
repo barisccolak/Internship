@@ -179,9 +179,8 @@ def check_D(
                 "CALL JOB:SET_TCPON ARGF" + argument
             ):
                 line = len(job_file.headlines) + index_tcpon - 2
-                msg = "When a TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases"
                 error_lines.append(line)
-                errors.append((group, number, line, msg))
+                errors.append(f"When a TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases")
 
     for index, item in job_file.command_lines:
         if item.startswith("CALL JOB:SET_TCPON ARGF"):
@@ -191,13 +190,14 @@ def check_D(
                 "TCPON TL#(" + argument + ")"
             ):
                 line = len(job_file.headlines) + index_call - 1
-                msg = "When a CALL JOB:SET_TCPON command is called, the next line must be TCPON with the same argument number in both cases"
                 error_lines.append(line)
-                errors.append((group, number, line, msg))
-
+                errors.append(f"When a TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases")
+    
     if errors:
-        return errors
-
+        return [
+            (group, number, line, msg)
+            for msg, line in zip(errors, error_lines, strict=True)
+        ]
 
 def check_E(
     job_file: JobFile, group: str, number: int
