@@ -128,12 +128,7 @@ def check_C(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
             job_file.error_flag = True
             return (group, number, line, msg)
 
-        elif not set_flag_trigger:
-            msg = 'The command SET USERFRAME is present, but CALL JOB:TRIGGER ARGF"PROGRAMM_EIN" is not present'
-            line = len(job_file.headlines) + index_username + 1
-            job_file.error_flag = True
-            return (group, number, line, msg)
-
+        
         if set_flag_username and set_flag_trigger and index_username > index_trigger:
             msg = "The command SET USERFRAME must be executed before the command CALL JOB:TRIGGER ARGF PROGRAMM_EIN is called"
             line = len(job_file.headlines) + index_username + 1
@@ -160,7 +155,7 @@ def check_D(
 
     Returns
     -------
-    warnings : tuple
+    warnings : list of tuples
         Error messages.
     """
     errors = []
@@ -201,7 +196,7 @@ def check_D(
 
 def check_E(
     job_file: JobFile, group: str, number: int
-) -> list[tuple[str, int, int, str]]:
+) -> tuple[str, int, int, str]:
     """Check (JBI-W5).
 
     For all jobs in folder MAIN: The first program line (after initial
@@ -236,12 +231,12 @@ def check_E(
             return (group, number, None, msg)
 
 
-def check_F(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
+def check_F(job_file: JobFile, group: str, number: int) -> list[tuple[str, int, int, str]]:
     """Check (JBI-W6).
 
     ARCON and ARCOFF commands should be enclosed in a call of
     CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN" immediately before the ARCON command and a
-    call to CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS" immediately after the ARCOFF command.
+    call to CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS" immediately after the ARCOF command.
 
     Parameters
     ----------
@@ -254,9 +249,12 @@ def check_F(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
 
     Returns
     -------
-    warnings : tuple
+    warnings : list of tuples
         Error messages.
     """
+    errors = []
+    error_lines = []
+    
     for i in range(len(job_file.programlines) - 1):
         current_line = job_file.programlines[i].strip()
         next_line = job_file.programlines[i + 1].strip()
@@ -268,21 +266,26 @@ def check_F(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
         ):
             job_file.error_flag = True
             line = i + len(job_file.headlines) + 1
-            msg = ' ARCON command should be enclosed in a call of CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"'
-            return (group, number, line, msg)
+            error_lines.append(line)
+            errors.append(f"ARCON command should be enclosed in a call of CALL JOB:TRIGGER ARGF\"SCHWEISSEN_EIN\"")
 
-        # Check for ARCOFF
+        # Check for ARCOF
         elif current_line.startswith("ARCOF") ^ next_line.startswith(
             'CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"'
         ):
             job_file.error_flag = True
             line = i + len(job_file.headlines) + 1
-            msg = ' ARCOFF command should be enclosed in a call of CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"'
-            return (group, number, line, msg)
+            error_lines.append(line)
+            errors.append(f"ARCOF command should be enclosed in a call of CALL JOB:TRIGGER ARGF\"SCHWEISSEN_AUS\"")
 
         else:
             pass
 
+    if errors:
+        return [
+            (group, number, line, msg)
+            for msg, line in zip(errors, error_lines, strict=True)
+        ]
 
 def check_G(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
     """Check (JBI-W7).
@@ -315,14 +318,11 @@ def check_G(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
     for line_number, line in job_file.command_lines:
         if line.startswith(set_string):
             index_set.append(line_number)
-            print("Set ", line_number)
         elif line.startswith(trigger_string):
             index_trigger.append(line_number)
-            print("Trigger ", line_number)
 
     if not index_set and not index_trigger:
-        msg = set_string + " does not exist."
-        return (group, number, None, msg)
+        pass
     elif index_set and not index_trigger:
         pass
     elif not index_set and index_trigger:
@@ -335,7 +335,7 @@ def check_G(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
         return (group, number, line, msg)
 
 
-def check_H(job_file: JobFile, group: str, number: int) -> [tuple[str, int, int, str]]:
+def check_H(job_file: JobFile, group: str, number: int) -> list[tuple[str, int, int, str]]:
     """Check (JBI-W8).
 
     Trigger pairs (ON / OFF) must always be present in "closed" pairs.
@@ -351,7 +351,7 @@ def check_H(job_file: JobFile, group: str, number: int) -> [tuple[str, int, int,
 
     Returns
     -------
-    warnings : array
+    warnings : list of arrays
         Error messages.
     """
     errors = []
