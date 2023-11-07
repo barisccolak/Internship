@@ -1,0 +1,27 @@
+name: pytest
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  pytest:
+    name: pytest
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.10.12
+
+    - name: local pip install
+      run: |
+        pip install -e .[test]
+
+    - name: run pytest
+      run: |
+        pytest .
