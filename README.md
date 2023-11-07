@@ -26,3 +26,15 @@ To check the rules for all files in a folder:
 - w4 : if a the `TCPON` command is called, the previous line must be a call to CALL `JOB:SET_TCPON` with the same argument number in both cases.
 - w5 : for all jobs in folder `MAIN`: The first program line (after initial comments) as well as the final program line should be `CALL JOB:TRIGGER_RESET`.
 - w6 : `ARCON` and `ARCOFF` commands should be enclosed in a call of `CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"` immediately before the `ARCON` command and a call to `CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"` immediately after the `ARCOFF` command.
+- w7 :  If foldername is `MAIN`, the command `CALL JOB:SET_IDS_FULL` (with arguments) must be present and called before `CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"`
+- w8 : Trigger pairs:
+  
+    `CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"`-`CALL JOB:TRIGGER ARGF"PROGRAMM_AUS"`,
+    
+    `CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"`-`CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"`,
+    
+     `CALL JOB:TRIGGER ARGF"UI_START"`-`CALL JOB:TRIGGER ARGF"UI_STOP"`,
+     
+     `CALL JOB:TRIGGER ARGF"TRIG_EIN"`-`CALL JOB:TRIGGER ARGF"TRIG_AUS"`
+
+   must always be present in "closed" pairs.
