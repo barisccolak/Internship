@@ -17,6 +17,7 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: 3.10.12
-
-    - name: Run Python script on JOB files
-      run: python testmodule/fileparser.py
+        
+    - name: Run Python script on test.JBI file
+      run: |
+        find . -name "test.JBI" -exec python testmodule/fileparser.py {} \;
