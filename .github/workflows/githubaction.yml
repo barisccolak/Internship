@@ -19,4 +19,4 @@ jobs:
         python-version: 3.10.12
         
     - name: Run Python script on test.JBI file
-      run: python Internship/testmodule/test.JBI
+      run: python fileparser.py 
