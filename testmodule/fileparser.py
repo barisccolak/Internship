@@ -28,7 +28,7 @@ class Rule:
         return self.logic(job_file, self.group, self.number)
 
 
-def check_A(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
+def check_w1(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
     """Check (JBI-W, 1).
 
     Check if program starts with a comment line directly after the NOP statement.
@@ -54,7 +54,7 @@ def check_A(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
         return (group, number, line, msg)
 
 
-def check_B(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
+def check_w2(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
     """Check (JBI-W, 2).
 
     Test the job if program command SETREG MREG# is listed
@@ -87,7 +87,7 @@ def check_B(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
                 return (group, number, line, msg)
 
 
-def check_C(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
+def check_w3(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
     """Check (JBI-W3).
 
     If the job is in the folder STANDARD or MAIN, the line SET USERFRAME n
@@ -135,7 +135,7 @@ def check_C(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
             return (group, number, line, msg)
 
 
-def check_D(
+def check_w4(
     job_file: JobFile, group: str, number: int
 ) -> list[tuple[str, int, int, str]]:
     """Check (JBI-W4).
@@ -198,7 +198,7 @@ def check_D(
         ]
 
 
-def check_E(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
+def check_w5(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
     """Check (JBI-W5).
 
     For all jobs in folder MAIN: The first program line (after initial
@@ -233,7 +233,7 @@ def check_E(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
             return (group, number, None, msg)
 
 
-def check_F(
+def check_w6(
     job_file: JobFile, group: str, number: int
 ) -> list[tuple[str, int, int, str]]:
     """Check (JBI-W6).
@@ -296,7 +296,7 @@ def check_F(
         ]
 
 
-def check_G(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
+def check_w7(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
     """Check (JBI-W7).
 
     If foldername is MAIN, the command CALL JOB:SET_IDS_FULL (with arguments) must be
@@ -344,7 +344,7 @@ def check_G(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
         return (group, number, line, msg)
 
 
-def check_H(
+def check_w8(
     job_file: JobFile, group: str, number: int
 ) -> list[tuple[str, int, int, str]]:
     """Check (JBI-W8).
@@ -523,14 +523,14 @@ def input_folder(file_path: str):
 
 
 rules = [
-    Rule("JBI-W", 1, logic=check_A),
-    Rule("JBI-W", 2, logic=check_B),
-    Rule("JBI-W", 3, logic=check_C),
-    Rule("JBI-W", 4, logic=check_D),
-    Rule("JBI-W", 5, logic=check_E),
-    Rule("JBI-W", 6, logic=check_F),
-    Rule("JBI-W", 7, logic=check_G),
-    Rule("JBI-W", 8, logic=check_H),
+    Rule("JBI-W", 1, logic=check_w1),
+    Rule("JBI-W", 2, logic=check_w2),
+    Rule("JBI-W", 3, logic=check_w3),
+    Rule("JBI-W", 4, logic=check_w4),
+    Rule("JBI-W", 5, logic=check_w5),
+    Rule("JBI-W", 6, logic=check_w6),
+    Rule("JBI-W", 7, logic=check_w7),
+    Rule("JBI-W", 8, logic=check_w8),
 ]
 
 
@@ -572,5 +572,5 @@ def check_jobfile(file_path: str):
 
 
 if __name__ == "__main__":
-    file_path = "./testmodule/test.JBI"
+    file_path = "/mnt/scratch/bcolak/Internship/testmodule/demonstrator"
     check_jobfile(file_path)
