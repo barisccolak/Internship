@@ -128,7 +128,6 @@ def check_C(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
             job_file.error_flag = True
             return (group, number, line, msg)
 
-        
         if set_flag_username and set_flag_trigger and index_username > index_trigger:
             msg = "The command SET USERFRAME must be executed before the command CALL JOB:TRIGGER ARGF PROGRAMM_EIN is called"
             line = len(job_file.headlines) + index_username + 1
@@ -175,7 +174,9 @@ def check_D(
             ):
                 line = len(job_file.headlines) + index_tcpon - 2
                 error_lines.append(line)
-                errors.append(f"When a TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases")
+                errors.append(
+                    "When a TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases"
+                )
 
     for index, item in job_file.command_lines:
         if item.startswith("CALL JOB:SET_TCPON ARGF"):
@@ -186,17 +187,18 @@ def check_D(
             ):
                 line = len(job_file.headlines) + index_call - 1
                 error_lines.append(line)
-                errors.append(f"When a TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases")
-    
+                errors.append(
+                    "When a TCPON command is called, the previous line must be a call to CALL JOB:SET_TCPON with the same argument number in both cases"
+                )
+
     if errors:
         return [
             (group, number, line, msg)
             for msg, line in zip(errors, error_lines, strict=True)
         ]
 
-def check_E(
-    job_file: JobFile, group: str, number: int
-) -> tuple[str, int, int, str]:
+
+def check_E(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
     """Check (JBI-W5).
 
     For all jobs in folder MAIN: The first program line (after initial
@@ -231,7 +233,9 @@ def check_E(
             return (group, number, None, msg)
 
 
-def check_F(job_file: JobFile, group: str, number: int) -> list[tuple[str, int, int, str]]:
+def check_F(
+    job_file: JobFile, group: str, number: int
+) -> list[tuple[str, int, int, str]]:
     """Check (JBI-W6).
 
     ARCON and ARCOFF commands should be enclosed in a call of
@@ -254,7 +258,7 @@ def check_F(job_file: JobFile, group: str, number: int) -> list[tuple[str, int, 
     """
     errors = []
     error_lines = []
-    
+
     for i in range(len(job_file.programlines) - 1):
         current_line = job_file.programlines[i].strip()
         next_line = job_file.programlines[i + 1].strip()
@@ -267,7 +271,9 @@ def check_F(job_file: JobFile, group: str, number: int) -> list[tuple[str, int, 
             job_file.error_flag = True
             line = i + len(job_file.headlines) + 1
             error_lines.append(line)
-            errors.append(f"ARCON command should be enclosed in a call of CALL JOB:TRIGGER ARGF\"SCHWEISSEN_EIN\"")
+            errors.append(
+                'ARCON command should be enclosed in a call of CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"'
+            )
 
         # Check for ARCOF
         elif current_line.startswith("ARCOF") ^ next_line.startswith(
@@ -276,7 +282,9 @@ def check_F(job_file: JobFile, group: str, number: int) -> list[tuple[str, int, 
             job_file.error_flag = True
             line = i + len(job_file.headlines) + 1
             error_lines.append(line)
-            errors.append(f"ARCOF command should be enclosed in a call of CALL JOB:TRIGGER ARGF\"SCHWEISSEN_AUS\"")
+            errors.append(
+                'ARCOF command should be enclosed in a call of CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"'
+            )
 
         else:
             pass
@@ -286,6 +294,7 @@ def check_F(job_file: JobFile, group: str, number: int) -> list[tuple[str, int, 
             (group, number, line, msg)
             for msg, line in zip(errors, error_lines, strict=True)
         ]
+
 
 def check_G(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
     """Check (JBI-W7).
@@ -335,7 +344,9 @@ def check_G(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
         return (group, number, line, msg)
 
 
-def check_H(job_file: JobFile, group: str, number: int) -> list[tuple[str, int, int, str]]:
+def check_H(
+    job_file: JobFile, group: str, number: int
+) -> list[tuple[str, int, int, str]]:
     """Check (JBI-W8).
 
     Trigger pairs (ON / OFF) must always be present in "closed" pairs.
@@ -446,34 +457,28 @@ class JobFile:
 
     def read_file(self):
         """Class method to read the file and print the content."""
-        try:
-            with open(self.file_path, encoding=_encoding) as file:
-                self.lines = file.readlines()
+        with open(self.file_path, encoding=_encoding) as file:
+            self.lines = file.readlines()
 
-                self.comment_lines = [
-                    (i, line.strip())
-                    for i, line in enumerate(self.lines)
-                    if line.startswith("'")
-                ]
+            self.comment_lines = [
+                (i, line.strip())
+                for i, line in enumerate(self.lines)
+                if line.startswith("'")
+            ]
 
-                self.command_lines = [
-                    (i, line.strip())
-                    for i, line in enumerate(self.lines)
-                    if not line.startswith("'")
-                ]
+            self.command_lines = [
+                (i, line.strip())
+                for i, line in enumerate(self.lines)
+                if not line.startswith("'")
+            ]
 
-                for i, line in enumerate(self.lines):
-                    if line.startswith("NOP"):
-                        self.separator = i  # stores the index of NOP
-                        self.programlines = self.lines[self.separator :]
-                        # add the lines after NOP into headlines
-                        self.headlines = self.lines[: self.separator]
-                        # add the lines before NOP into headlines
-
-        except FileNotFoundError:
-            raise FileNotFoundError(f"File not found: {self.file_path}")
-        except Exception as e:
-            raise e
+            for i, line in enumerate(self.lines):
+                if line.startswith("NOP"):
+                    self.separator = i  # stores the index of NOP
+                    self.programlines = self.lines[self.separator :]
+                    # add the lines after NOP into headlines
+                    self.headlines = self.lines[: self.separator]
+                    # add the lines before NOP into headlines
 
     def save_name(self):
         """Filter the characters in the name line until ' ,' and save as name."""
@@ -535,17 +540,13 @@ def check_jobfile(file_path: str):
 
     files = []
 
-    try:
-        if p.is_file():
-            files = [p]
-        elif p.is_dir():
-            files = sorted(p.glob("*.JBI"))
+    if p.is_file():
+        files = [p]
+    elif p.is_dir():
+        files = sorted(p.glob("*.JBI"))
 
-        else:
-            raise ValueError("Wrong input.")
-
-    except ValueError as e:
-        print(e)
+    else:
+        raise ValueError("Wrong input.")
 
     for file in files:
         job_file = JobFile(file)
