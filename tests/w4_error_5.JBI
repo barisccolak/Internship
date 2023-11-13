@@ -1,0 +1,9 @@
+/JOB
+//NAME TEST
+///FOLDERNAME MAIN
+NOP
+'A comment
+CALL JOB:SET_TCPON ARGF5
+Another line
+TCPON TL#(5)
+END
