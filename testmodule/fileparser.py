@@ -546,7 +546,7 @@ def check_jobfile(file_path: str):
         files = sorted(p.glob("*.JBI"))
 
     else:
-        raise ValueError("Wrong input.")
+        raise ValueError(f"Wrong input: {p}")
 
     for file in files:
         job_file = JobFile(file)
