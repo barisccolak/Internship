@@ -572,5 +572,5 @@ def check_jobfile(file_path: str):
 
 
 if __name__ == "__main__":
-    file_path = "./testmodule/testfiles/test.JBI"
+    file_path = "./testmodule/test.JBI"
     check_jobfile(file_path)
