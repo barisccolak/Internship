@@ -19,5 +19,4 @@ jobs:
         python-version: 3.10.12
 
     - name: Run Python script on JOB files
-      run: |
-        find . -name "*.JBI" -exec python testmodule/fileparser.py \;
+      run: -exec python testmodule/fileparser.py \;
