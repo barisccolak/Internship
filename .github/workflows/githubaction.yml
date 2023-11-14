@@ -20,3 +20,4 @@ jobs:
         
     - name: Run Python script on test.JBI file
       run: python testmodule/main.py 
+      working-directory: ${{ github.workspace }}
