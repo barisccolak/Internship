@@ -1,5 +1,5 @@
 from __future__ import annotations
-from jobfile import JobFile
+from .jobfile import JobFile
 import os
 
 class Rule:

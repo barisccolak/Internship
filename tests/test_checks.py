@@ -1,5 +1,6 @@
 import pytest
-from testmodule.fileparser import JobFile, check_w1, check_w2, check_w3, check_w4, check_w5, check_w6, check_w7, check_w8
+from testmodule.jobfile import JobFile
+from testmodule.rule import Rule, check_w1, check_w2, check_w3, check_w4, check_w5, check_w6, check_w7, check_w8
 
 @pytest.fixture(autouse=True)
 def change_test_dir(request, monkeypatch):
