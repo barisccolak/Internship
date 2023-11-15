@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from testmodule.jobfile import JobFile
 from testmodule.rule import Rule, check_w1, check_w2, check_w3, check_w4, check_w5, check_w6, check_w7, check_w8
+import argparse
 
 rules = [
     Rule("JBI-W", 1, logic=check_w1),
@@ -52,29 +53,22 @@ def check_jobfile(file_path: str):
                 )
                 print(warning)
 
-def input_folder(file_path: str):
-    """Receive single input folder."""
-    for root, dirs, files in os.walk(file_path):
-        for file in sorted(files):
-            if file.endswith(".JBI"):
-                file_path = os.path.join(root, file)  # creates a full path
-                JobFile(file_path)
 
-def input_file(file_path: str):
-    """Receive single input file."""
-    job = JobFile(file_path)
-
-    for rule in rules:
-        result = rule.apply_rule(job)
-        if result is not None:
-            warning = (
-                result[0] + str(result[1]) + " [" + str(result[2]) + "] : " + result[3]
-            )
-            print(warning)
-
-def main():
-    file_path = "/mnt/scratch/bcolak/Internship/testmodule/test.JBI"
+def main(file_path):
     check_jobfile(file_path)
 
+
 if __name__ == "__main__":
-    main()
+    # setup the argument parser
+    parser = argparse.ArgumentParser(
+        prog="YASKAWA fileparser",
+        description="Check one or multiple YASKAWA JOB files for logic errors.",
+    )
+    parser.add_argument(
+        "filename",
+        type=str,
+        help="path to a single file or folder containing JOB files",
+    )
+    args = parser.parse_args()
+
+    main(args.filename)
