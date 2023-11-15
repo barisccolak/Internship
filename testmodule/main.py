@@ -1,8 +1,17 @@
-"""Main.py module"""
-import os
+"""Main.py script."""
 from pathlib import Path
 from testmodule.jobfile import JobFile
-from testmodule.rule import Rule, check_w1, check_w2, check_w3, check_w4, check_w5, check_w6, check_w7, check_w8
+from testmodule.rule import (
+    Rule,
+    check_w1,
+    check_w2,
+    check_w3,
+    check_w4,
+    check_w5,
+    check_w6,
+    check_w7,
+    check_w8,
+)
 import argparse
 
 rules = [
@@ -17,7 +26,6 @@ rules = [
 ]
 
 
-
 def check_jobfile(file_path: str):
     """Run the rules in a folder or in a file."""
     p = Path(file_path)
@@ -29,7 +37,9 @@ def check_jobfile(file_path: str):
     elif p.is_dir():
         files = sorted(p.glob("*.JBI"))
     else:
-        raise ValueError(f"Invalid input: '{file_path}' is neither a file nor a directory.")
+        raise ValueError(
+            f"Invalid input: '{file_path}' is neither a file nor a directory."
+        )
 
     for file in files:
         job_file = JobFile(file)
@@ -55,6 +65,7 @@ def check_jobfile(file_path: str):
 
 
 def main(file_path):
+    """Parser arguments."""
     check_jobfile(file_path)
 
 

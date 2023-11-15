@@ -1,6 +1,7 @@
+"""Rule.py script defines features of Rule class."""
 from __future__ import annotations
 from .jobfile import JobFile
-import os
+from typing import Callable
 
 class Rule:
     """It defines the class Rule."""

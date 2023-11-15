@@ -1,8 +1,9 @@
+"""Jobfile.py defines the features of jobfile."""
 from __future__ import annotations
 import os
-from pathlib import Path
 
 _encoding = "cp1252"  # default yaskawa file encoding
+
 
 class JobFile:
     """Public class to define jobFile."""
@@ -98,4 +99,3 @@ class JobFile:
                 return
 
         self.foldername = "!!NOFOLDERNAME!!"
-
