@@ -17,7 +17,11 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: 3.10.12
-        
+
+    - name: local pip install
+      run: |
+        pip install -e .
+    
     - name: Run Python script on test.JBI file
       run: python testmodule/main.py testmodule/demonstrator 
       working-directory: ${{ github.workspace }}
