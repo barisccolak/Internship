@@ -25,6 +25,11 @@ class JobFile:
 
         self.read_LVARS()
 
+    def __repr__(self):
+        rep = 'Job File:\n\t' + f"{self.file_name}" + '\n' + 'Path:\n\t' +str(self.file_path) + '\n' + 'Foldername:\n\t' +str(self.foldername) + '\n' + 'Number of header lines:\n\t' +str(len(self.headlines)) + '\n' + 'Number of program lines:\n\t' +str(len(self.programlines)) + '\n' + 'Number of LVARS:\n\t' +str(len(self.LVARS))
+        return rep
+
+    
     def read_LVARS(self):
         """Create a dictionary with the local variables."""
         start_parsing = False  # Flag to indicate when to start parsing LVARS section
