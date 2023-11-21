@@ -1,9 +1,6 @@
 import pytest
 from testmodule.jobfile import JobFile
 from testmodule.rule import (
-    read_from_string
-    Rule,
-    main,
     check_w1,
     check_w2,
     check_w3,
