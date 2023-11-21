@@ -1,7 +1,6 @@
 import pytest
 from testmodule.jobfile import JobFile
 from testmodule.rule import (
-    Rule,
     check_w1,
     check_w2,
     check_w3,
@@ -247,7 +246,7 @@ def test_check_w5_error_1():
 
     assert result[0] == "W"
     assert result[1] == "5"
-    assert result[2] == None
+    assert result[2] is None
     assert result[3].startswith("For all jobs in folder MAIN")
 
 
@@ -257,7 +256,7 @@ def test_check_w5_error_2():
 
     assert result[0] == "W"
     assert result[1] == "5"
-    assert result[2] == None
+    assert result[2] is None
     assert result[3].startswith("For all jobs in folder MAIN")
 
 
@@ -267,7 +266,7 @@ def test_check_w5_error_3():
 
     assert result[0] == "W"
     assert result[1] == "5"
-    assert result[2] == None
+    assert result[2] is None
     assert result[3].startswith("For all jobs in folder MAIN")
 
 
