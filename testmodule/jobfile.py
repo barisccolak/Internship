@@ -2,7 +2,7 @@
 from __future__ import annotations
 import os
 
-_encoding = "cp1252"  # default yaskawa file encoding
+from .helpers import _read_file_or_bytes
 
 
 class JobFile:
@@ -19,7 +19,7 @@ class JobFile:
         self.separator = None
         self.warnings = []
 
-        self.read_file()
+        self.read_file(self.file_path)
         self.save_name()
         self.save_foldername()
 
@@ -55,30 +55,29 @@ class JobFile:
                     False  # Stop parsing when another ///LVARS section is encountered
                 )
 
-    def read_file(self):
+    def read_file(self, file_or_contents):
         """Class method to read the file and print the content."""
-        with open(self.file_path, encoding=_encoding) as file:
-            self.lines = file.readlines()
+        self.lines = _read_file_or_bytes(file_or_contents).split("\n")
 
-            self.comment_lines = [
-                (i, line.strip())
-                for i, line in enumerate(self.lines)
-                if line.startswith("'")
-            ]
+        self.comment_lines = [
+            (i, line.strip())
+            for i, line in enumerate(self.lines)
+            if line.startswith("'")
+        ]
 
-            self.command_lines = [
-                (i, line.strip())
-                for i, line in enumerate(self.lines)
-                if not line.startswith("'")
-            ]
+        self.command_lines = [
+            (i, line.strip())
+            for i, line in enumerate(self.lines)
+            if not line.startswith("'")
+        ]
 
-            for i, line in enumerate(self.lines):
-                if line.startswith("NOP"):
-                    self.separator = i  # stores the index of NOP
-                    self.programlines = self.lines[self.separator :]
-                    # add the lines after NOP into headlines
-                    self.headlines = self.lines[: self.separator]
-                    # add the lines before NOP into headlines
+        for i, line in enumerate(self.lines):
+            if line.startswith("NOP"):
+                self.separator = i  # stores the index of NOP
+                self.programlines = self.lines[self.separator :]
+                # add the lines after NOP into headlines
+                self.headlines = self.lines[: self.separator]
+                # add the lines before NOP into headlines
 
     def save_name(self):
         """Filter the characters in the name line until ' ,' and save as name."""
