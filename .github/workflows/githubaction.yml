@@ -21,7 +21,7 @@ jobs:
     - name: local pip install
       run: |
         pip install -e .
-    
+
     - name: Run Python script on test.JBI file
-      run: python testmodule/main.py testmodule/demonstrator 
+      run: python testmodule/main.py testmodule/demonstrator
       working-directory: ${{ github.workspace }}
