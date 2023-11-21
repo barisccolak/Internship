@@ -32,7 +32,7 @@ convention = "numpy"
 
 # pytest configuration
 [tool.pytest.ini_options]
-addopts = "--tb=short --color=yes -rsw --cov=testmodule --cov-report term-missing"
+addopts = "--tb=auto --color=yes -rsw --cov=testmodule --cov-report term-missing"
 testpaths = ["tests",]
 
 [tool.coverage.run]

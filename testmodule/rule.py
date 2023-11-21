@@ -1,12 +1,7 @@
-"""Fileparser recieves JBI data and tests their suitability."""
-
+"""Rule.py script defines features of Rule class."""
 from __future__ import annotations
-
-import os
-from pathlib import Path
-
-_encoding = "cp1252"  # default yaskawa file encoding
-
+from .jobfile import JobFile
+from typing import Callable
 
 class Rule:
     """It defines the class Rule."""
@@ -28,7 +23,7 @@ class Rule:
         return self.logic(job_file, self.group, self.number)
 
 
-def check_A(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
+def check_w1(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
     """Check (JBI-W, 1).
 
     Check if program starts with a comment line directly after the NOP statement.
@@ -48,13 +43,12 @@ def check_A(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
         Error messages.
     """
     if not job_file.programlines[1].startswith("'"):
-        job_file.error_flag = True
         line = job_file.separator + 2
         msg = "Every program should start with a comment line directly after the NOP statement"
         return (group, number, line, msg)
 
 
-def check_B(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
+def check_w2(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
     """Check (JBI-W, 2).
 
     Test the job if program command SETREG MREG# is listed
@@ -77,7 +71,6 @@ def check_B(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
     for line in job_file.programlines:
         if line.startswith("SETREG MREG#"):
             if not job_file.foldername == "TWINCAT_KOMMUNIKATION":
-                job_file.error_flag = True
                 line = [
                     (i, line.strip())
                     for i, line in enumerate(job_file.headlines)
@@ -87,7 +80,7 @@ def check_B(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
                 return (group, number, line, msg)
 
 
-def check_C(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
+def check_w3(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
     """Check (JBI-W3).
 
     If the job is in the folder STANDARD or MAIN, the line SET USERFRAME n
@@ -125,17 +118,15 @@ def check_C(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
         if not set_flag_username:
             msg = "The command SET USERFRAME does not exist"
             line = len(job_file.headlines) + index_trigger + 1
-            job_file.error_flag = True
             return (group, number, line, msg)
 
         if set_flag_username and set_flag_trigger and index_username > index_trigger:
             msg = "The command SET USERFRAME must be executed before the command CALL JOB:TRIGGER ARGF PROGRAMM_EIN is called"
             line = len(job_file.headlines) + index_username + 1
-            job_file.error_flag = True
             return (group, number, line, msg)
 
 
-def check_D(
+def check_w4(
     job_file: JobFile, group: str, number: int
 ) -> list[tuple[str, int, int, str]]:
     """Check (JBI-W4).
@@ -198,7 +189,7 @@ def check_D(
         ]
 
 
-def check_E(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
+def check_w5(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
     """Check (JBI-W5).
 
     For all jobs in folder MAIN: The first program line (after initial
@@ -233,7 +224,7 @@ def check_E(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
             return (group, number, None, msg)
 
 
-def check_F(
+def check_w6(
     job_file: JobFile, group: str, number: int
 ) -> list[tuple[str, int, int, str]]:
     """Check (JBI-W6).
@@ -268,7 +259,6 @@ def check_F(
         if next_line.startswith("ARCON") ^ current_line.startswith(
             'CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"'
         ):
-            job_file.error_flag = True
             line = i + len(job_file.headlines) + 1
             error_lines.append(line)
             errors.append(
@@ -279,7 +269,6 @@ def check_F(
         elif current_line.startswith("ARCOF") ^ next_line.startswith(
             'CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"'
         ):
-            job_file.error_flag = True
             line = i + len(job_file.headlines) + 1
             error_lines.append(line)
             errors.append(
@@ -296,7 +285,7 @@ def check_F(
         ]
 
 
-def check_G(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
+def check_w7(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, str]:
     """Check (JBI-W7).
 
     If foldername is MAIN, the command CALL JOB:SET_IDS_FULL (with arguments) must be
@@ -344,7 +333,7 @@ def check_G(job_file: JobFile, group: str, number: int) -> tuple[str, int, int, 
         return (group, number, line, msg)
 
 
-def check_H(
+def check_w8(
     job_file: JobFile, group: str, number: int
 ) -> list[tuple[str, int, int, str]]:
     """Check (JBI-W8).
@@ -400,177 +389,3 @@ def check_H(
             (group, number, line + 1, msg)
             for msg, line in zip(errors, error_lines, strict=True)
         ]
-
-
-##########################
-class JobFile:
-    """Public class to define jobFile."""
-
-    def __init__(self, file_path: str):
-        """Initialize."""
-        self.file_path = file_path
-        self.file_name = os.path.basename(file_path)
-        self.foldername = None
-        self.lines = None
-        self.headlines = []
-        self.programlines = []
-        self.separator = None
-        self.error_flag = False
-
-        self.warnings = []
-
-        self.read_file()
-        self.save_name()
-        self.save_foldername()
-
-        self.read_LVARS()
-
-    def read_LVARS(self):
-        """Create a dictionary with the local variables."""
-        start_parsing = False  # Flag to indicate when to start parsing LVARS section
-        parts = []
-        self.LVARS = {}
-        for line in self.headlines:
-            if line.startswith("///LVARS"):
-                start_parsing = True
-                continue
-
-            if start_parsing:
-                if line.startswith("/"):  # Stop when parameters ends
-                    start_parsing = False
-
-                parts = line.strip().split(" ")  # Split the line into parts
-
-            if len(parts) == 2:
-                # take
-                variable_name = parts[1].strip()
-                variable_type = parts[0][:2]
-                variable_number = parts[0][2:].strip()
-
-                # store
-                self.LVARS[variable_name] = (variable_type, variable_number)
-
-            if start_parsing and line.startswith("///LVARS"):
-                start_parsing = (
-                    False  # Stop parsing when another ///LVARS section is encountered
-                )
-
-    def read_file(self):
-        """Class method to read the file and print the content."""
-        with open(self.file_path, encoding=_encoding) as file:
-            self.lines = file.readlines()
-
-            self.comment_lines = [
-                (i, line.strip())
-                for i, line in enumerate(self.lines)
-                if line.startswith("'")
-            ]
-
-            self.command_lines = [
-                (i, line.strip())
-                for i, line in enumerate(self.lines)
-                if not line.startswith("'")
-            ]
-
-            for i, line in enumerate(self.lines):
-                if line.startswith("NOP"):
-                    self.separator = i  # stores the index of NOP
-                    self.programlines = self.lines[self.separator :]
-                    # add the lines after NOP into headlines
-                    self.headlines = self.lines[: self.separator]
-                    # add the lines before NOP into headlines
-
-    def save_name(self):
-        """Filter the characters in the name line until ' ,' and save as name."""
-        until = " "
-        self.name = self.headlines[1]
-        self.name = self.name[self.name.index(until) :]
-        self.name = self.name.strip()  # delete the empty space
-
-    def save_foldername(self):
-        """Filter the characters in the folder name."""
-        for line in self.headlines:
-            if line.startswith("///FOLDERNAME"):
-                # split the line with " " and take the second element from the
-                # list split ( 0 and 1)
-                self.foldername = line.split(" ", 1)[1].strip()
-                return
-
-        self.foldername = "!!NOFOLDERNAME!!"
-
-
-##########################
-def input_file(file_path: str):
-    """Recieve single input file."""
-    job = JobFile(file_path)
-
-    for rule in rules:
-        result = rule.apply_rule(job)
-        if result is not None:
-            warning = (
-                result[0] + str(result[1]) + " [" + str(result[2]) + "] : " + result[3]
-            )
-            print(warning)
-
-
-def input_folder(file_path: str):
-    """Recieve single input folder."""
-    for root, dirs, files in os.walk(file_path):
-        for file in sorted(files):
-            if file.endswith(".JBI"):
-                file_path = os.path.join(root, file)  # creates a full path
-                JobFile(file_path)
-
-
-rules = [
-    Rule("JBI-W", 1, logic=check_A),
-    Rule("JBI-W", 2, logic=check_B),
-    Rule("JBI-W", 3, logic=check_C),
-    Rule("JBI-W", 4, logic=check_D),
-    Rule("JBI-W", 5, logic=check_E),
-    Rule("JBI-W", 6, logic=check_F),
-    Rule("JBI-W", 7, logic=check_G),
-    Rule("JBI-W", 8, logic=check_H),
-]
-
-
-def check_jobfile(file_path: str):
-    """Run the rules in a folder or in a file."""
-    p = Path(file_path)
-
-    files = []
-
-    if p.is_file():
-        files = [p]
-    elif p.is_dir():
-        files = sorted(p.glob("*.JBI"))
-
-    else:
-        raise ValueError("Wrong input.")
-
-    for file in files:
-        job_file = JobFile(file)
-        for rule in rules:
-            results = rule.apply_rule(job_file)
-
-            if results is None:
-                continue
-
-            if isinstance(results, tuple):
-                results = [results]
-
-            for result in results:
-                warning = (
-                    result[0]
-                    + str(result[1])
-                    + " ["
-                    + str(result[2])
-                    + "] : "
-                    + result[3]
-                )
-                print(warning)
-
-
-if __name__ == "__main__":
-    file_path = "/mnt/scratch/bcolak/Internship/testmodule/test.JBI"
-    check_jobfile(file_path)
