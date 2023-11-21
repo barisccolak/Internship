@@ -1,5 +1,7 @@
 from testmodule import JobFile
 
+from testmodule.helpers import _encoding
+
 
 def test_jobfile_string_input():
     """Test if Jobfile can be created from string input."""
@@ -30,6 +32,6 @@ CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"
 END
 """
 
-    job = JobFile(input_string.encode("cp1252"))
+    job = JobFile(input_string.encode(_encoding))
     assert job.foldername == "MAIN"
     assert job.comment_lines[0] == (4, "'A comment")
