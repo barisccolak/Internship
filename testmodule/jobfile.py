@@ -1,6 +1,6 @@
 """Jobfile.py defines the features of jobfile."""
 from __future__ import annotations
-import os
+from pathlib import Path
 
 from .helpers import _read_file_or_bytes
 
@@ -10,8 +10,8 @@ class JobFile:
 
     def __init__(self, file_path: str):
         """Initialize."""
-        self.file_path = file_path
-        self.file_name = os.path.basename(file_path)
+        self.file_path = None
+        self.file_name = None
         self.foldername = None
         self.lines = None
         self.headlines = []
@@ -19,7 +19,7 @@ class JobFile:
         self.separator = None
         self.warnings = []
 
-        self.read_file(self.file_path)
+        self.read_file(file_path)
         self.save_name()
         self.save_foldername()
 
@@ -57,6 +57,13 @@ class JobFile:
 
     def read_file(self, file_or_contents):
         """Class method to read the file and print the content."""
+        if not isinstance(file_or_contents, bytes):
+            p = Path(file_or_contents)
+
+            if p.exists():  # check if we have a filename
+                self.file_path = p.parent
+                self.file_name = p.name
+
         self.lines = _read_file_or_bytes(file_or_contents).split("\n")
 
         self.comment_lines = [
