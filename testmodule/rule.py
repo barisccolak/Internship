@@ -43,7 +43,6 @@ def check_w1(job_file: JobFile, group: str, number: int) -> tuple[str, int, int,
         Error messages.
     """
     if not job_file.programlines[1].startswith("'"):
-        job_file.error_flag = True
         line = job_file.separator + 2
         msg = "Every program should start with a comment line directly after the NOP statement"
         return (group, number, line, msg)
@@ -72,7 +71,6 @@ def check_w2(job_file: JobFile, group: str, number: int) -> tuple[str, int, int,
     for line in job_file.programlines:
         if line.startswith("SETREG MREG#"):
             if not job_file.foldername == "TWINCAT_KOMMUNIKATION":
-                job_file.error_flag = True
                 line = [
                     (i, line.strip())
                     for i, line in enumerate(job_file.headlines)
@@ -120,13 +118,11 @@ def check_w3(job_file: JobFile, group: str, number: int) -> tuple[str, int, int,
         if not set_flag_username:
             msg = "The command SET USERFRAME does not exist"
             line = len(job_file.headlines) + index_trigger + 1
-            job_file.error_flag = True
             return (group, number, line, msg)
 
         if set_flag_username and set_flag_trigger and index_username > index_trigger:
             msg = "The command SET USERFRAME must be executed before the command CALL JOB:TRIGGER ARGF PROGRAMM_EIN is called"
             line = len(job_file.headlines) + index_username + 1
-            job_file.error_flag = True
             return (group, number, line, msg)
 
 
@@ -263,7 +259,6 @@ def check_w6(
         if next_line.startswith("ARCON") ^ current_line.startswith(
             'CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"'
         ):
-            job_file.error_flag = True
             line = i + len(job_file.headlines) + 1
             error_lines.append(line)
             errors.append(
@@ -274,7 +269,6 @@ def check_w6(
         elif current_line.startswith("ARCOF") ^ next_line.startswith(
             'CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"'
         ):
-            job_file.error_flag = True
             line = i + len(job_file.headlines) + 1
             error_lines.append(line)
             errors.append(

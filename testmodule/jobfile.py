@@ -17,8 +17,6 @@ class JobFile:
         self.headlines = []
         self.programlines = []
         self.separator = None
-        self.error_flag = False
-
         self.warnings = []
 
         self.read_file()
