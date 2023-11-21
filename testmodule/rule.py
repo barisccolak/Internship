@@ -3,6 +3,7 @@ from __future__ import annotations
 from .jobfile import JobFile
 from typing import Callable
 
+
 class Rule:
     """It defines the class Rule."""
 
