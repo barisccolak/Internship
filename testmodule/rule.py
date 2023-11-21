@@ -210,19 +210,24 @@ def check_w5(job_file: JobFile, group: str, number: int) -> tuple[str, int, int,
     warnings : tuple
         Error messages.
     """
+    msg = "For all jobs in folder MAIN: The first program line (after initial comments) as well as the final program line should be CALL JOB:TRIGGER_RESET"
+
     if job_file.foldername == "MAIN":
         command_indexes = [
             (i, line.strip())
             for i, line in enumerate(job_file.programlines)
             if not line.startswith("'")
         ]
-        if (
-            not command_indexes[1][1]
-            == command_indexes[-2][1]
-            == "CALL JOB:TRIGGER_RESET"
-        ):
-            msg = "For all jobs in folder MAIN: The first program line (after initial comments) as well as the final program line should be CALL JOB:TRIGGER_RESET"
+        if not command_indexes[1][1] == "CALL JOB:TRIGGER_RESET":
             return (group, number, None, msg)
+
+    for i in range(len(job_file.programlines) - 1):
+        current_line = job_file.programlines[i].strip()
+        next_line = job_file.programlines[i + 1].strip()
+
+        if next_line.startswith("END"):
+            if not current_line.startswith("CALL JOB:TRIGGER_RESET"):
+                return (group, number, None, msg)
 
 
 def check_w6(
