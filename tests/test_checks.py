@@ -32,7 +32,7 @@ def job_file_generator(
         header += f"///FOLDERNAME {foldername}\n"
     if header_extra is not None:
         header += header_extra
-        
+
     if program is None:
         program = """'A comment
 COMMAND\n"""
@@ -53,7 +53,8 @@ def test_check_w1():
 
 
 def test_check_w1_errors():
-    job = JobFile("w1_error.JBI")
+    job_string = job_file_generator("COMMAND")
+    job = JobFile(job_string)
     result = check_w1(job, "W", "1")
 
     assert result[0] == "W"
@@ -68,14 +69,16 @@ def test_check_w1_errors():
 # CHECK_W2
 # ===========
 def test_check_w2():
-    job = JobFile("w2_pass.JBI")
+    job_string = job_file_generator(program = "SETREG MREG#", foldername = "TWINCAT_KOMMUNIKATION")
+    job = JobFile(job_string)
     result = check_w2(job, "W", "1")
 
     assert result is None
 
 
 def test_check_w2_error():
-    job = JobFile("w2_error.JBI")
+    job_string = job_file_generator(program = "SETREG MREG#")
+    job = JobFile(job_string)
     result = check_w2(job, "W", "2")
 
     assert result[0] == "W"
@@ -84,36 +87,45 @@ def test_check_w2_error():
     assert result[3].startswith("The program command")
 
 
-# ===========
-# CHECK_W3
+# ===========# CHECK_W3
 # ===========
 def test_check_w3():
-    job = JobFile("w3_pass.JBI")
+      
+    program ='''SET USERFRAME
+CALL JOB:TRIGGER ARGF
+"PROGRAMM_EIN"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w3(job, "W", "3")
 
     assert result is None
 
 
 def test_check_w3_error_1():
-    job = JobFile("w3_error_1.JBI")
+    program = 'CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"\n'
+    job_string = job_file_generator(program, foldername = "STANDARD")
+    job = JobFile(job_string)
     result = check_w3(job, "W", "3")
 
     assert result[0] == "W"
     assert result[1] == "3"
-    assert result[2] == 6
+    assert result[2] == 5
     assert result[3] == "The command SET USERFRAME does not exist"
 
 
 def test_check_w3_error_2():
-    job = JobFile("w3_error_2.JBI")
+    program = 'CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"\n'
+    job_string = job_file_generator(program, foldername = "STANDARD")
+    job = JobFile(job_string)
     result = check_w3(job, "W", "3")
 
     assert result[0] == "W"
     assert result[1] == "3"
-    assert result[2] == 6
+    assert result[2] == 5
     assert result[3] == "The command SET USERFRAME does not exist"
-
-
+####################################################################################
+############################refactor checkpoint#####################################
+####################################################################################
 def test_check_w3_error_3():
     job = JobFile("w3_error_3.JBI")
     result = check_w3(job, "W", "3")
