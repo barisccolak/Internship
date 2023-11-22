@@ -92,8 +92,7 @@ def test_check_w2_error():
 def test_check_w3():
       
     program ='''SET USERFRAME
-CALL JOB:TRIGGER ARGF
-"PROGRAMM_EIN"\n'''
+CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"\n'''
     job_string = job_file_generator(program, foldername = "MAIN")
     job = JobFile(job_string)
     result = check_w3(job, "W", "3")
