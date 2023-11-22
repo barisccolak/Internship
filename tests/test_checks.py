@@ -16,15 +16,35 @@ from testmodule.rule import (
 def change_test_dir(request, monkeypatch):
     monkeypatch.chdir(request.fspath.dirname)
 
+input_string = """/JOB
+//NAME TEST
+///FOLDERNAME TEST
+NOP
+'A comment
+COMMAND
+END"""
 
+
+
+#def job_file_generator():
+    
 # ===========
 # CHECK_W1
 # ===========
 def test_check_w1():
-    job = JobFile("w1_pass.JBI")
+    job = JobFile("""
+/JOB
+//NAME TEST
+///FOLDERNAME TEST
+NOP
+'A comment
+COMMAND
+END
+    """)
     result = check_w1(job, "W", "1")
 
     assert result is None
+
 
 
 def test_check_w1_errors():
