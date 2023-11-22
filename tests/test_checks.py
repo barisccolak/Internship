@@ -16,35 +16,40 @@ from testmodule.rule import (
 def change_test_dir(request, monkeypatch):
     monkeypatch.chdir(request.fspath.dirname)
 
-input_string = """/JOB
-//NAME TEST
-///FOLDERNAME TEST
-NOP
-'A comment
-COMMAND
-END"""
+
+def job_file_generator(
+    program: str = None,
+    header_extra: str = None,
+    jobname: str = "TEST",
+    foldername="TESTFOLDER",
+    nop="NOP\n",
+    end="END\n",
+):
+    header = "/JOB\n"
+    if jobname is not None:
+        header += f"//NAME {jobname}\n"
+    if foldername is not None:
+        header += f"///FOLDERNAME {foldername}\n"
+    if header_extra is not None:
+        header += header_extra
+        
+    if program is None:
+        program = """'A comment
+COMMAND\n"""
+
+    job = header + nop + program + end
+    return job
 
 
-
-#def job_file_generator():
-    
 # ===========
 # CHECK_W1
 # ===========
 def test_check_w1():
-    job = JobFile("""
-/JOB
-//NAME TEST
-///FOLDERNAME TEST
-NOP
-'A comment
-COMMAND
-END
-    """)
+    job_string = job_file_generator()
+    job = JobFile(job_string)
     result = check_w1(job, "W", "1")
 
     assert result is None
-
 
 
 def test_check_w1_errors():
