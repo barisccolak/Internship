@@ -113,7 +113,6 @@ class JobFile:
         """Filter the characters in the name line until ' ,' and save as name."""
         until = " "
         self.name = self.headlines[1]
-        self.name = self.name[self.name.index(until) :]
         self.name = self.name.strip()  # delete the empty space
 
     def save_foldername(self):
