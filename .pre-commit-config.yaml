@@ -9,10 +9,6 @@ repos:
     rev: 23.11.0
     hooks:
     -   id: black
--   repo: https://github.com/pycqa/isort
-    rev: 5.11.2
-    hooks:
-      - id: isort
 
 ci:
     autofix_commit_msg: |
