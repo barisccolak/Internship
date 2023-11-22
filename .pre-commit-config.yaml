@@ -5,11 +5,16 @@ repos:
     -   id: check-yaml
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
--   repo: https://github.com/psf/black
-    rev: 22.10.0
+-   repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 23.11.0
     hooks:
     -   id: black
-
+        language_version: python3.11
+  - repo: https://github.com/pycqa/isort
+    rev: 5.11.2
+    hooks:
+      - id: isort
+        name: isort (python)
 
 ci:
     autofix_commit_msg: |
