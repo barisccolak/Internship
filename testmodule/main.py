@@ -1,5 +1,7 @@
 """Main.py script."""
+import argparse
 from pathlib import Path
+
 from testmodule.jobfile import JobFile
 from testmodule.rule import (
     Rule,
@@ -12,7 +14,6 @@ from testmodule.rule import (
     check_w7,
     check_w8,
 )
-import argparse
 
 rules = [
     Rule("JBI-W", 1, logic=check_w1),
@@ -26,60 +27,61 @@ rules = [
 ]
 
 
-def check_jobfile(file_path: str):
-    """Run the rules in a folder or in a file."""
-    p = Path(file_path)
+def check_jobfile(input_data: str):
+    """Run the rules on a folder on a file or on a string."""
+    p = Path(input_data)
 
-    files = []
-
+    # input_data as a file
     if p.is_file():
-        files = [p]
+        job_file = JobFile(p)
+        refactor(p)
+
+    # input_data as a directory
     elif p.is_dir():
         files = sorted(p.glob("*.JBI"))
+
+        for file in files:
+            refactor(file)
+
+    # input_data as a string
     else:
-        raise ValueError(
-            f"Invalid input: '{file_path}' is neither a file nor a directory."
-        )
-
-    for file in files:
-        job_file = JobFile(file)
-        for rule in rules:
-            results = rule.apply_rule(job_file)
-
-            if results is None:
-                continue
-
-            if isinstance(results, tuple):
-                results = [results]
-
-            for result in results:
-                warning = (
-                    result[0]
-                    + str(result[1])
-                    + " ["
-                    + str(result[2])
-                    + "] : "
-                    + result[3]
-                )
-                print(warning)
+        refactor(input_data)
 
 
-def main(file_path):
+def refactor(input_data):
+    """Refactor the output message."""
+    job_file = JobFile(input_data)
+    for rule in rules:
+        results = rule.apply_rule(job_file)
+
+        if results is None:
+            continue
+
+        if isinstance(results, tuple):
+            results = [results]
+
+        for result in results:
+            warning = (
+                result[0] + str(result[1]) + " [" + str(result[2]) + "] : " + result[3]
+            )
+            print(warning)
+
+
+def main(input_data):
     """Parser arguments."""
-    check_jobfile(file_path)
+    check_jobfile(input_data)
 
 
 if __name__ == "__main__":
-    # setup the argument parser
     parser = argparse.ArgumentParser(
         prog="YASKAWA fileparser",
         description="Check one or multiple YASKAWA JOB files for logic errors.",
     )
     parser.add_argument(
-        "filename",
+        "input_data",
         type=str,
         help="path to a single file or folder containing JOB files",
     )
     args = parser.parse_args()
 
-    main(args.filename)
+    main(args.input_data)

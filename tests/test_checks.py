@@ -17,18 +17,55 @@ def change_test_dir(request, monkeypatch):
     monkeypatch.chdir(request.fspath.dirname)
 
 
+def job_file_generator(
+    program: str = None,
+    header_extra: str = None,
+    jobname: str = "TEST",
+    foldername="TESTFOLDER",
+    nop="NOP\n",
+    end="END\n",
+):
+    header = "/JOB\n"
+    if jobname is not None:
+        header += f"//NAME {jobname}\n"
+    if foldername is not None:
+        header += f"///FOLDERNAME {foldername}\n"
+    if header_extra is not None:
+        header += header_extra
+
+
+    if program is not None:
+        if not program.startswith("'"):
+            program = """'A comment COMMAND\n""" + program
+        if not program.endswith("\n"):
+            program = program + "\n"
+    else:
+        program = """'A comment COMMAND\n"""
+
+    job = header + nop + program + end
+    return job
+
 # ===========
 # CHECK_W1
 # ===========
 def test_check_w1():
-    job = JobFile("w1_pass.JBI")
+    job_string = job_file_generator()
+    job = JobFile(job_string)
     result = check_w1(job, "W", "1")
 
     assert result is None
 
 
-def test_check_w1_errors():
-    job = JobFile("w1_error.JBI")
+def test_check_w1_error():
+    job_string = """/JOB
+//NAME TEST
+///FOLDERNAME MAIN
+NOP
+CALL JOB:TRIGGER_RESET
+END
+
+"""
+    job = JobFile(job_string)
     result = check_w1(job, "W", "1")
 
     assert result[0] == "W"
@@ -43,14 +80,16 @@ def test_check_w1_errors():
 # CHECK_W2
 # ===========
 def test_check_w2():
-    job = JobFile("w2_pass.JBI")
+    job_string = job_file_generator(program = "SETREG MREG#\n", foldername = "TWINCAT_KOMMUNIKATION")
+    job = JobFile(job_string)
     result = check_w2(job, "W", "1")
 
     assert result is None
 
 
 def test_check_w2_error():
-    job = JobFile("w2_error.JBI")
+    job_string = job_file_generator(program = "SETREG MREG#\n")
+    job = JobFile(job_string)
     result = check_w2(job, "W", "2")
 
     assert result[0] == "W"
@@ -59,18 +98,23 @@ def test_check_w2_error():
     assert result[3].startswith("The program command")
 
 
-# ===========
-# CHECK_W3
+# ===========# CHECK_W3
 # ===========
 def test_check_w3():
-    job = JobFile("w3_pass.JBI")
+      
+    program ='''SET USERFRAME
+CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w3(job, "W", "3")
 
     assert result is None
 
 
 def test_check_w3_error_1():
-    job = JobFile("w3_error_1.JBI")
+    program = 'CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"\n'
+    job_string = job_file_generator(program, foldername = "STANDARD")
+    job = JobFile(job_string)
     result = check_w3(job, "W", "3")
 
     assert result[0] == "W"
@@ -80,17 +124,23 @@ def test_check_w3_error_1():
 
 
 def test_check_w3_error_2():
-    job = JobFile("w3_error_2.JBI")
+    program = 'CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"\n'
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w3(job, "W", "3")
 
     assert result[0] == "W"
     assert result[1] == "3"
     assert result[2] == 6
     assert result[3] == "The command SET USERFRAME does not exist"
-
+    
+                                                
 
 def test_check_w3_error_3():
-    job = JobFile("w3_error_3.JBI")
+    program ='''CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"
+SET USERFRAME\n'''
+    job_string = job_file_generator(program, foldername = "STANDARD")
+    job = JobFile(job_string)
     result = check_w3(job, "W", "3")
 
     assert result[0] == "W"
@@ -103,7 +153,10 @@ def test_check_w3_error_3():
 
 
 def test_check_w3_error_4():
-    job = JobFile("w3_error_4.JBI")
+    program ='''CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"
+SET USERFRAME\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w3(job, "W", "3")
 
     assert result[0] == "W"
@@ -118,25 +171,32 @@ def test_check_w3_error_4():
 # ===========
 # CHECK_W4
 # ===========
-def test_check_w4():
-    job = JobFile("w4_pass.JBI")
-    result = check_w4(job, "W", "4")
 
+def test_check_w4():
+    program = '''CALL JOB:SET_TCPON ARGF5
+TCPON TL#(5)\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
+    result = check_w4(job, "W", "3")
     assert result is None
 
 
 def test_check_w4_error_1():
-    job = JobFile("w4_error_1.JBI")
+    program = '''TCPON TL#(5)\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w4(job, "W", "4")
 
     assert result[0][0] == "W"
     assert result[0][1] == "4"
-    assert result[0][2] == 7
+    assert result[0][2] == 6
     assert result[0][3].startswith("When a TCPON command")
 
 
 def test_check_w4_error_2():
-    job = JobFile("w4_error_2.JBI")
+    program = '''CALL JOB:SET_TCPON ARGF5\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w4(job, "W", "4")
 
     assert result[0][0] == "W"
@@ -146,7 +206,10 @@ def test_check_w4_error_2():
 
 
 def test_check_w4_error_3():
-    job = JobFile("w4_error_3.JBI")
+    program = '''TCPON TL#(5)
+CALL JOB:SET_TCPON ARGF5\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w4(job, "W", "4")
 
     assert result[0][0] == "W"
@@ -156,7 +219,10 @@ def test_check_w4_error_3():
 
 
 def test_check_w4_error_4():
-    job = JobFile("w4_error_4.JBI")
+    program = '''CALL JOB:SET_TCPON ARGF5
+TCPON TL#(6)\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w4(job, "W", "4")
 
     assert result[0][0] == "W"
@@ -166,7 +232,11 @@ def test_check_w4_error_4():
 
 
 def test_check_w4_error_5():
-    job = JobFile("w4_error_5.JBI")
+    program = '''CALL JOB:SET_TCPON ARGF5
+Another line
+TCPON TL#(5)\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w4(job, "W", "4")
 
     assert result[0][0] == "W"
@@ -176,7 +246,13 @@ def test_check_w4_error_5():
 
 
 def test_check_w4_error_6():
-    job = JobFile("w4_error_6.JBI")
+    program = '''CALL JOB:SET_TCPON ARGF5
+TCPON TL#(5)
+Another line
+CALL JOB:SET_TCPON ARGF5
+TCPON TL#(6)\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w4(job, "W", "4")
 
     assert result[0][0] == "W"
@@ -186,7 +262,12 @@ def test_check_w4_error_6():
 
 
 def test_check_w4_error_7():
-    job = JobFile("w4_error_7.JBI")
+    program = '''CALL JOB:SET_TCPON ARGF5
+TCPON TL#(5)
+CALL JOB:SET_TCPON ARGF6
+TCPON TL#(7))\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w4(job, "W", "4")
 
     assert result[0][0] == "W"
@@ -196,7 +277,12 @@ def test_check_w4_error_7():
 
 
 def test_check_w4_error_8():
-    job = JobFile("w4_error_8.JBI")
+    program = '''CALL JOB:SET_TCPON ARGF6
+TCPON TL#(7)
+CALL JOB:SET_TCPON ARGF5
+TCPON TL#(5)\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w4(job, "W", "4")
 
     assert result[0][0] == "W"
@@ -206,7 +292,13 @@ def test_check_w4_error_8():
 
 
 def test_check_w4_error_9():
-    job = JobFile("w4_error_9.JBI")
+    program = '''CALL JOB:SET_TCPON ARGF6
+TCPON TL#(7)
+Anotherline
+CALL JOB:SET_TCPON ARGF5
+TCPON TL#(5)\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w4(job, "W", "4")
 
     assert result[0][0] == "W"
@@ -216,7 +308,13 @@ def test_check_w4_error_9():
 
 
 def test_check_w4_error_10():
-    job = JobFile("w4_error_10.JBI")
+    program = '''CALL JOB:SET_TCPON ARGF6
+TCPON TL#(7)
+Anotherline
+CALL JOB:SET_TCPON ARGF5
+TCPON TL#(9)\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w4(job, "W", "4")
 
     assert result[0][0] == "W"
@@ -234,14 +332,21 @@ def test_check_w4_error_10():
 # CHECK_W5
 # ===========
 def test_check_w5():
-    job = JobFile("w5_pass.JBI")
+    program = '''CALL JOB:TRIGGER_RESET
+ANOTHER LINE
+CALL JOB:TRIGGER_RESET\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w5(job, "W", "5")
 
     assert result is None
 
 
 def test_check_w5_error_1():
-    job = JobFile("w5_error_1.JBI")
+    program = '''CALL JOB:TRIGGER_RESET
+ANOTHER LINE\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w5(job, "W", "5")
 
     assert result[0] == "W"
@@ -251,7 +356,10 @@ def test_check_w5_error_1():
 
 
 def test_check_w5_error_2():
-    job = JobFile("w5_error_2.JBI")
+    program = '''ANOTHER LINE
+CALL JOB:TRIGGER_RESET\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w5(job, "W", "5")
 
     assert result[0] == "W"
@@ -261,7 +369,11 @@ def test_check_w5_error_2():
 
 
 def test_check_w5_error_3():
-    job = JobFile("w5_error_3.JBI")
+    program = '''ANOTHER LINE
+CALL JOB:TRIGGER_RESET
+CALL JOB:TRIGGER_RESET\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w5(job, "W", "5")
 
     assert result[0] == "W"
@@ -274,14 +386,26 @@ def test_check_w5_error_3():
 # CHECK_W6
 # ===========
 def test_check_w6():
-    job = JobFile("w6_pass.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"
+ARCON
+ANOTHER LINE
+ARCOF
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"
+END\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w6(job, "W", "6")
 
     assert result is None
 
 
 def test_check_w6_error_1():
-    job = JobFile("w6_error_1.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"
+ARCON
+ANOTHER LINE
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w6(job, "W", "6")
 
     assert result[0][0] == "W"
@@ -291,7 +415,12 @@ def test_check_w6_error_1():
 
 
 def test_check_w6_error_2():
-    job = JobFile("w6_error_2.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"
+ARCON
+ANOTHER LINE
+ARCOF\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w6(job, "W", "6")
 
     assert result[0][0] == "W"
@@ -301,7 +430,12 @@ def test_check_w6_error_2():
 
 
 def test_check_w6_error_3():
-    job = JobFile("w6_error_3.JBI")
+    program = '''ARCON
+ANOTHER LINE
+ARCOF
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w6(job, "W", "6")
 
     assert result[0][0] == "W"
@@ -311,7 +445,12 @@ def test_check_w6_error_3():
 
 
 def test_check_w6_error_4():
-    job = JobFile("w6_error_4.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"
+ANOTHER LINE
+ARCOF
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w6(job, "W", "6")
 
     assert result[0][0] == "W"
@@ -321,9 +460,13 @@ def test_check_w6_error_4():
 
 
 def test_check_w6_error_5():
-    job = JobFile("w6_error_5.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"
+ANOTHER LINE
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w6(job, "W", "6")
-
+    
     assert result[0][0] == "W"
     assert result[0][1] == "6"
     assert result[0][2] == 6
@@ -336,7 +479,11 @@ def test_check_w6_error_5():
 
 
 def test_check_w6_error_6():
-    job = JobFile("w6_error_6.JBI")
+    program = '''ARCON
+ANOTHER LINE
+ARCOF\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w6(job, "W", "6")
 
     assert result[0][0] == "W"
@@ -351,7 +498,13 @@ def test_check_w6_error_6():
 
 
 def test_check_w6_error_7():
-    job = JobFile("w6_error_7.JBI")
+    program = '''ARCON
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"
+ANOTHER LINE
+ARCOF
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w6(job, "W", "6")
 
     assert result[0][0] == "W"
@@ -361,7 +514,13 @@ def test_check_w6_error_7():
 
 
 def test_check_w6_error_8():
-    job = JobFile("w6_error_8.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"
+ARCON
+ANOTHER LINE
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"
+ARCOF\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w6(job, "W", "6")
 
     assert result[0][0] == "W"
@@ -371,7 +530,13 @@ def test_check_w6_error_8():
 
 
 def test_check_w6_error_9():
-    job = JobFile("w6_error_9.JBI")
+    program = '''ARCON
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"
+ANOTHER LINE
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"
+ARCOF\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w6(job, "W", "6")
 
     assert result[0][0] == "W"
@@ -389,14 +554,19 @@ def test_check_w6_error_9():
 # CHECK_W7
 # ===========
 def test_check_w7():
-    job = JobFile("w7_pass.JBI")
+    program = '''CALL JOB:SET_IDS_FULL
+CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w7(job, "W", "7")
 
     assert result is None
 
 
 def test_check_w7_error_1():
-    job = JobFile("w7_error_1.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w7(job, "W", "7")
 
     assert result[0] == "W"
@@ -406,7 +576,10 @@ def test_check_w7_error_1():
 
 
 def test_check_w7_error_2():
-    job = JobFile("w7_error_2.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"
+CALL JOB:SET_IDS_FULL\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w7(job, "W", "7")
 
     assert result[0] == "W"
@@ -419,14 +592,36 @@ def test_check_w7_error_2():
 # CHECK_W8
 # ===========
 def test_check_w8():
-    job = JobFile("w8_pass.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"
+CALL JOB:TRIGGER ARGF"PROGRAMM_AUS"
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"
+CALL JOB:TRIGGER ARGF"UI_START"
+CALL JOB:TRIGGER ARGF"UI_STOP"
+CALL JOB:TRIGGER ARGF"TRIG_EIN"
+CALL JOB:TRIGGER ARGF"TRIG_AUS"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w8(job, "W", "8")
 
     assert result is None
 
+def test_check_w8_2():
+    program = '''CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"
+CALL JOB:TRIGGER ARGF"PROGRAMM_AUS"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
+    result = check_w8(job, "W", "8")
 
+    assert result is None
+
+#########################################################################
 def test_check_w8_error_1():
-    job = JobFile("w8_error_1.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w8(job, "W", "8")
 
     assert result[0][0] == "W"
@@ -438,7 +633,9 @@ def test_check_w8_error_1():
 
 
 def test_check_w8_error_2():
-    job = JobFile("w8_error_2.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w8(job, "W", "8")
 
     assert result[0][0] == "W"
@@ -450,9 +647,11 @@ def test_check_w8_error_2():
 
 
 def test_check_w8_error_3():
-    job = JobFile("w8_error_3.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"UI_START"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w8(job, "W", "8")
-
+    
     assert result[0][0] == "W"
     assert result[0][1] == "8"
     assert result[0][2] == 6
@@ -462,7 +661,9 @@ def test_check_w8_error_3():
 
 
 def test_check_w8_error_4():
-    job = JobFile("w8_error_4.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"TRIG_EIN"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w8(job, "W", "8")
 
     assert result[0][0] == "W"
@@ -474,7 +675,9 @@ def test_check_w8_error_4():
 
 
 def test_check_w8_error_5():
-    job = JobFile("w8_error_5.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"PROGRAMM_AUS"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w8(job, "W", "8")
 
     assert result[0][0] == "W"
@@ -486,7 +689,9 @@ def test_check_w8_error_5():
 
 
 def test_check_w8_error_6():
-    job = JobFile("w8_error_6.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w8(job, "W", "8")
 
     assert result[0][0] == "W"
@@ -498,7 +703,9 @@ def test_check_w8_error_6():
 
 
 def test_check_w8_error_7():
-    job = JobFile("w8_error_7.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"UI_STOP"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w8(job, "W", "8")
 
     assert result[0][0] == "W"
@@ -510,7 +717,9 @@ def test_check_w8_error_7():
 
 
 def test_check_w8_error_8():
-    job = JobFile("w8_error_8.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"TRIG_AUS"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w8(job, "W", "8")
 
     assert result[0][0] == "W"
@@ -522,7 +731,10 @@ def test_check_w8_error_8():
 
 
 def test_check_w8_error_9():
-    job = JobFile("w8_error_9.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"PROGRAMM_AUS"
+CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w8(job, "W", "8")
 
     assert result[0][0] == "W"
@@ -541,7 +753,10 @@ def test_check_w8_error_9():
 
 
 def test_check_w8_error_10():
-    job = JobFile("w8_error_10.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w8(job, "W", "8")
 
     assert result[0][0] == "W"
@@ -560,7 +775,10 @@ def test_check_w8_error_10():
 
 
 def test_check_w8_error_11():
-    job = JobFile("w8_error_11.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"UI_STOP"
+CALL JOB:TRIGGER ARGF"UI_START"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w8(job, "W", "8")
 
     assert result[0][0] == "W"
@@ -579,7 +797,10 @@ def test_check_w8_error_11():
 
 
 def test_check_w8_error_12():
-    job = JobFile("w8_error_12.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"TRIG_AUS"
+CALL JOB:TRIGGER ARGF"TRIG_EIN"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w8(job, "W", "8")
 
     assert result[0][0] == "W"
@@ -598,7 +819,11 @@ def test_check_w8_error_12():
 
 
 def test_check_w8_error_13():
-    job = JobFile("w8_error_13.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"
+CALL JOB:TRIGGER ARGF"PROGRAMM_AUS"
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w8(job, "W", "8")
 
     assert result[0][0] == "W"
@@ -610,7 +835,11 @@ def test_check_w8_error_13():
 
 
 def test_check_w8_error_14():
-    job = JobFile("w8_error_14.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"
+CALL JOB:TRIGGER ARGF"PROGRAMM_AUS"
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_AUS"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w8(job, "W", "8")
 
     assert result[0][0] == "W"
@@ -622,7 +851,10 @@ def test_check_w8_error_14():
 
 
 def test_check_w8_error_15():
-    job = JobFile("w8_error_15.JBI")
+    program = '''CALL JOB:TRIGGER ARGF"PROGRAMM_EIN"
+CALL JOB:TRIGGER ARGF"SCHWEISSEN_EIN"\n'''
+    job_string = job_file_generator(program, foldername = "MAIN")
+    job = JobFile(job_string)
     result = check_w8(job, "W", "8")
 
     assert result[0][0] == "W"
@@ -640,8 +872,3 @@ def test_check_w8_error_15():
     )
 
 
-def test_check_w8_2():
-    job = JobFile("w8_pass_2.JBI")
-    result = check_w8(job, "W", "8")
-
-    assert result is None

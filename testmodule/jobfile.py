@@ -41,12 +41,15 @@ class JobFile:
             + str(len(self.headlines))
             + "\n"
             + "Number of program lines:\n\t"
-            + str(len(self.programlines))
+            + str(number_program_lines()) #except NOP, END and " "
             + "\n"
             + "Number of LVARS:\n\t"
             + str(len(self.LVARS))
         )
         return rep
+
+    def number_program_lines(self):
+        return len([line for line in self.program_lines if not line in ["NOP", "END", ""]])
 
     def read_LVARS(self):
         """Create a dictionary with the local variables."""
@@ -113,7 +116,6 @@ class JobFile:
         """Filter the characters in the name line until ' ,' and save as name."""
         until = " "
         self.name = self.headlines[1]
-        self.name = self.name[self.name.index(until) :]
         self.name = self.name.strip()  # delete the empty space
 
     def save_foldername(self):
