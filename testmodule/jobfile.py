@@ -41,7 +41,7 @@ class JobFile:
             + str(len(self.headlines))
             + "\n"
             + "Number of program lines:\n\t"
-            + str(number_program_lines()) #except NOP, END and " "
+            + str(number_program_lines())  # except NOP, END and " "
             + "\n"
             + "Number of LVARS:\n\t"
             + str(len(self.LVARS))
@@ -49,7 +49,9 @@ class JobFile:
         return rep
 
     def number_program_lines(self):
-        return len([line for line in self.program_lines if not line in ["NOP", "END", ""]])
+        return len(
+            [line for line in self.program_lines if not line in ["NOP", "END", ""]]
+        )
 
     def read_LVARS(self):
         """Create a dictionary with the local variables."""
